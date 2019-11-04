@@ -1,0 +1,3 @@
+(library
+ (name lambe)
+ (public_name lambe))
