@@ -1,0 +1,3 @@
+(library
+ (name lambe_ast)
+ (public_name lambe.ast))
