@@ -1,3 +1,9 @@
+module Kind = struct
+  type t =
+    | Arrow of t * t
+    | Type
+end
+
 module Type = struct
   module Native = struct
     type t =
@@ -12,7 +18,7 @@ module Type = struct
     | Arrow of t * t
     | Apply of t * t
     | Type
-end
+ end
 
 module Term = struct
   module Native = struct
@@ -41,7 +47,7 @@ module Entity = struct
     (* Trait expression *)
     | Impl of Type.t list * Type.t option * t list
     | Trait of
-        string * (string * Type.t) list * Type.t list * Type.t option * t list
+        string * (string * Kind.t) list * Type.t list * Type.t option * t list
     (* Type expression *)
     | Type of Type.t * Type.t list
     | Data of Type.t * (string * Type.t) list
