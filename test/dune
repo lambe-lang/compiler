@@ -1,3 +1,0 @@
-(test
- (name lambe_test)
- (libraries alcotest lambe))

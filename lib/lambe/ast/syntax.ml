@@ -14,11 +14,12 @@ module Type = struct
 
   type t =
     | Native of Native.t
+    | Variable of string
     | Ident of string
-    | Arrow of t * t
     | Apply of t * t
-    | Type
- end
+    | Arrow of t * t
+    | Forall of string * Kind.t * t
+end
 
 module Term = struct
   module Native = struct
@@ -32,10 +33,11 @@ module Term = struct
     (* Native expressions *)
     | Native of Native.t
     (* Lambda expression *)
-    | Ident of string
+    | Variable of string
     | Abstraction of string * t
     | Apply of t * t
     (* Let constructions *)
+    | Ident of string
     | Let of string * t * t
     | LetImpl of Type.t list * Type.t option * t list * t
     (* Smart cast *)
