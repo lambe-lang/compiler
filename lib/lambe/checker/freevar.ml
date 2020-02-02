@@ -1,8 +1,8 @@
 let rec from =
+  let open Lambe_ast.Type in
   let remove n l =
     List.fold_right (fun e r -> if e = n then r else e :: r) l []
   in
-  let open Lambe_ast.Syntax.Type in
   function
   | Variable v -> [ v ]
   | Arrow (t1, t2) -> from t1 @ from t2

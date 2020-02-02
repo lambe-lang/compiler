@@ -1,3 +1,4 @@
 (library
  (name lambe_ast)
- (public_name lambe.ast))
+ (public_name lambe.ast)
+ (modules_without_implementation kind type term entity))
