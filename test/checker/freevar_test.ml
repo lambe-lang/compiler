@@ -1,5 +1,5 @@
 let should_provide_empty_freevar_from_native () =
-  let open Lambe_ast in
+  let open Lambe_ast.Ast in
   let open Lambe_checker in
   let expected = [] and computed = Freevar.from (Type.Native Type.Native.Int) in
   Alcotest.(check (list string))
@@ -8,7 +8,7 @@ let should_provide_empty_freevar_from_native () =
     computed
 
 let should_provide_empty_freevar_from_ident () =
-  let open Lambe_ast in
+  let open Lambe_ast.Ast in
   let open Lambe_checker in
   let expected = [] and computed = Freevar.from (Type.Ident "_") in
   Alcotest.(check (list string))
@@ -17,7 +17,7 @@ let should_provide_empty_freevar_from_ident () =
     computed
 
 let should_provide_singleton_freevar_from_variable () =
-  let open Lambe_ast in
+  let open Lambe_ast.Ast in
   let open Lambe_checker in
   let expected = [ "a" ] and computed = Freevar.from (Type.Variable "a") in
   Alcotest.(check (list string))
@@ -26,7 +26,7 @@ let should_provide_singleton_freevar_from_variable () =
     computed
 
 let should_provide_empty_freevar_from_forall () =
-  let open Lambe_ast in
+  let open Lambe_ast.Ast in
   let open Lambe_checker in
   let expected = []
   and computed =
@@ -38,7 +38,7 @@ let should_provide_empty_freevar_from_forall () =
     computed
 
 let should_provide_singleton_freevar_from_forall () =
-  let open Lambe_ast in
+  let open Lambe_ast.Ast in
   let open Lambe_checker in
   let expected = [ "b" ]
   and computed =
@@ -50,7 +50,7 @@ let should_provide_singleton_freevar_from_forall () =
     computed
 
 let should_provide_two_freevar_from_apply () =
-  let open Lambe_ast in
+  let open Lambe_ast.Ast in
   let open Lambe_checker in
   let expected = [ "b"; "a" ]
   and computed =

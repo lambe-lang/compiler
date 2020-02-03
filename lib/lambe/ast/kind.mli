@@ -1,3 +1,5 @@
-type t =
-  | Arrow of t * t
-  | Type
+module S : sig
+  type t =
+    | Arrow of t * t
+    | Type
+end

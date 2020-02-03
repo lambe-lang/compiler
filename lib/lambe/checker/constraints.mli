@@ -1,9 +1,11 @@
-open Lambe_ast
+module S : sig
+  open Lambe_ast.Ast
 
-type t
+  type t
 
-val deref : t -> Type.t -> Type.t
+  val empty : t
 
-val add : string -> Type.t -> t -> t
+  val find : string -> t -> Type.t option
 
-val create : unit -> t
+  val add : string -> Type.t -> t -> t
+end

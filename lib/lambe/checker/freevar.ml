@@ -1,5 +1,6 @@
+open Lambe_ast.Ast.Type
+
 let rec from =
-  let open Lambe_ast.Type in
   let remove n l =
     List.fold_right (fun e r -> if e = n then r else e :: r) l []
   in
