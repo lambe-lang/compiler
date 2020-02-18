@@ -1,11 +1,9 @@
 open Lambe_ast.Type
 
 module Freevars = struct
-  open List
+  let add e env = if List.exists (( = ) e) env then env else e :: env
 
-  let add e env = if exists (( = ) e) env then env else e :: env
-
-  let remove e = fold_left (fun r v -> if e = v then r else v :: r) []
+  let remove e = List.fold_left (fun r v -> if e = v then r else v :: r) []
 
   let free_vars =
     let rec from unbound = function
@@ -21,16 +19,16 @@ end
 let free_vars = Freevars.free_vars
 
 module Substitution = struct
-  let rec substitute_one n v = function
-    | Variable m -> if n = m then v else Variable m
-    | Arrow (t1, t2) -> Arrow (substitute_one n v t1, substitute_one n v t2)
-    | Apply (t1, t2) -> Apply (substitute_one n v t1, substitute_one n v t2)
-    | Forall (m, k, t2) ->
-      Forall (m, k, if n = m then t2 else substitute_one n v t2)
-    | t -> t
-
-  let substitute l t =
-    List.fold_right (fun (n, v) t -> substitute_one n v t) l t
+  let substitute =
+    let rec substitute n v = function
+      | Variable m -> if n = m then v else Variable m
+      | Arrow (t1, t2) -> Arrow (substitute n v t1, substitute n v t2)
+      | Apply (t1, t2) -> Apply (substitute n v t1, substitute n v t2)
+      | Forall (m, k, t2) ->
+        Forall (m, k, if n = m then t2 else substitute n v t2)
+      | t -> t
+    in
+    List.fold_right (fun (n, v) t -> substitute n v t)
 end
 
 let substitute = Substitution.substitute
@@ -50,9 +48,9 @@ module Unification = struct
         >>= (fun s -> unify (substitute s t11) (substitute s t21) s)
       | Variable n, t | t, Variable n ->
         if List.mem n @@ free_vars t
-        then Error "Cyclic unification" (* TODO(didier) add specific errors *)
+        then Error "Cyclic unification"
         else Ok ((n, t) :: s)
-      | _ -> Error "Unification fails" (* TODO(didier) add specific errors *)
+      | _ -> Error "Unification fails"
     in
     unify t1 t2 []
 end
