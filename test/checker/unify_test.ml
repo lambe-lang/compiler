@@ -1,15 +1,7 @@
 open Lambe_ast.Type
-open Lambe_checker.Types
+open Lambe_checker.Unifier
 
-let pp_unification_error ppf = function
-  | CyclicUnification (t1, t2) ->
-    Format.fprintf ppf "Cyclic unification %a@ and %a" Lambe_pp.Type.pp t1
-      Lambe_pp.Type.pp t2
-  | CannotUnify (t1, t2) ->
-    Format.fprintf ppf "Cannot unify %a@ and %a" Lambe_pp.Type.pp t1
-      Lambe_pp.Type.pp t2
-
-let unification_error = Alcotest.testable pp_unification_error ( = )
+let unification_error = Alcotest.testable Lambe_pp.Unifier.pp ( = )
 
 let lambe_type = Alcotest.testable Lambe_pp.Type.pp ( = )
 

@@ -1,5 +1,4 @@
 (library
  (name lambe_checker)
  (public_name lambe.checker)
- (modules_without_implementation lambe_checker)
  (libraries lambe.ast))
