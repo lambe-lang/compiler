@@ -74,7 +74,7 @@ let should_not_unify_apply_type_cyclic () =
     "should_not_unify_apply_type_cyclic" expected computed
 
 let test_cases =
-  ( "Unification.unify"
+  ( "Unification"
   , let open Alcotest in
     [
       test_case "Should unify native type" `Quick should_unify_native_type
