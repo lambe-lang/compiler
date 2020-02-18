@@ -1,16 +1,12 @@
-module S : sig
-  module Native : sig
-    type t =
-      | Int
-      | String
-      | Char
-  end
+type native =
+  | Int
+  | String
+  | Char
 
-  type t =
-    | Native of Native.t
-    | Variable of string
-    | Ident of string
-    | Apply of t * t
-    | Arrow of t * t
-    | Forall of string * Kind.S.t * t
-end
+type t =
+  | Native of native
+  | Variable of string
+  | Ident of string
+  | Apply of t * t
+  | Arrow of t * t
+  | Forall of string * Kind.t * t
