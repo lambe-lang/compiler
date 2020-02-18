@@ -1,74 +1,83 @@
 open Lambe_ast.Type
-open Lambe_checker
+open Lambe_checker.Types
+
+let pp_unification_error ppf = function
+  | CyclicUnification (t1, t2) ->
+    Format.fprintf ppf "Cyclic unification %a@ and %a" Lambe_pp.Type.pp t1
+      Lambe_pp.Type.pp t2
+  | CannotUnify (t1, t2) ->
+    Format.fprintf ppf "Cannot unify %a@ and %a" Lambe_pp.Type.pp t1
+      Lambe_pp.Type.pp t2
+
+let unification_error = Alcotest.testable pp_unification_error ( = )
 
 let lambe_type = Alcotest.testable Lambe_pp.Type.pp ( = )
 
-let unify_type = Alcotest.(result (list (pair string lambe_type)) string)
+let unify_type =
+  Alcotest.(result (list (pair string lambe_type)) unification_error)
 
 let should_unify_native_type () =
   let expected = Ok []
-  and computed = Types.unify (Native Int) (Native Int) in
+  and computed = unify (Native Int) (Native Int) in
   Alcotest.(check unify_type) "should_unify_native_type" expected computed
 
 let should_unify_ident_type () =
   let expected = Ok []
-  and computed = Types.unify (Ident "a") (Ident "a") in
+  and computed = unify (Ident "a") (Ident "a") in
   Alcotest.(check unify_type) "should_unify_ident_type" expected computed
 
 let should_not_unify_ident_type () =
-  let expected = Error "Unification fails"
-  and computed = Types.unify (Ident "a") (Ident "b") in
+  let expected = Error (CannotUnify (Ident "a", Ident "b"))
+  and computed = unify (Ident "a") (Ident "b") in
   Alcotest.(check unify_type) "should_not_unify_ident_type" expected computed
 
 let should_unify_arrow_type () =
   let expected = Ok [ "x", Native Int; "y", Native String ]
   and computed =
-    Types.unify
+    unify
       (Arrow (Variable "x", Native String))
       (Arrow (Native Int, Variable "y"))
   in
   Alcotest.(check unify_type) "should_unify_arrow_type" expected computed
 
 let should_not_unify_arrow_type () =
-  let expected = Error "Unification fails"
+  let expected = Error (CannotUnify (Native String, Native Int))
   and computed =
-    Types.unify
+    unify
       (Arrow (Variable "x", Native String))
       (Arrow (Native Int, Variable "x"))
   in
   Alcotest.(check unify_type) "should_not_unify_arrow_type" expected computed
 
 let should_not_unify_arrow_type_cyclic () =
-  let expected = Error "Cyclic unification"
-  and computed =
-    Types.unify (Variable "x") (Arrow (Native Int, Variable "x"))
-  in
+  let expected =
+    Error (CyclicUnification (Variable "x", Arrow (Native Int, Variable "x")))
+  and computed = unify (Variable "x") (Arrow (Native Int, Variable "x")) in
   Alcotest.(check unify_type)
     "should_not_unify_arrow_type_cyclic" expected computed
 
 let should_unify_apply_type () =
   let expected = Ok [ "x", Native Int; "y", Native String ]
   and computed =
-    Types.unify
+    unify
       (Apply (Variable "x", Native String))
       (Apply (Native Int, Variable "y"))
   in
   Alcotest.(check unify_type) "should_unify_apply_type" expected computed
 
 let should_not_unify_apply_type () =
-  let expected = Error "Unification fails"
+  let expected = Error (CannotUnify (Native String, Native Int))
   and computed =
-    Types.unify
+    unify
       (Apply (Variable "x", Native String))
       (Apply (Native Int, Variable "x"))
   in
   Alcotest.(check unify_type) "should_not_unify_apply_type" expected computed
 
 let should_not_unify_apply_type_cyclic () =
-  let expected = Error "Cyclic unification"
-  and computed =
-    Types.unify (Variable "x") (Apply (Native Int, Variable "x"))
-  in
+  let expected =
+    Error (CyclicUnification (Variable "x", Apply (Native Int, Variable "x")))
+  and computed = unify (Variable "x") (Apply (Native Int, Variable "x")) in
   Alcotest.(check unify_type)
     "should_not_unify_apply_type_cyclic" expected computed
 
