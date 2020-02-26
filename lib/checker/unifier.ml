@@ -6,6 +6,8 @@ type unification_error =
   | CyclicUnification of Lambe_ast.Type.t * Lambe_ast.Type.t
   | CannotUnify of Lambe_ast.Type.t * Lambe_ast.Type.t
 
+type substitutions = (string * Lambe_ast.Type.t) list
+
 (* Naive implementation for the moment *)
 let unify t1 t2 =
   let ( >>= ) = Result.bind in
