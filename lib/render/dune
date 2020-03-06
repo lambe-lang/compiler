@@ -1,0 +1,4 @@
+(library
+ (name lambe_render)
+ (public_name lambe.render)
+ (libraries lambe.ast lambe.checker))

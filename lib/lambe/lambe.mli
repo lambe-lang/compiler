@@ -1,3 +1,4 @@
 module Ast = Lambe_ast
+module Syntax = Lambe_syntax
 module Checker = Lambe_checker
-module Pretty_printer = Lambe_pp
+module Render = Lambe_render

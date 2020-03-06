@@ -1,4 +1,0 @@
-(library
- (name lambe_parser)
- (public_name lambe.parser)
- (libraries transept))

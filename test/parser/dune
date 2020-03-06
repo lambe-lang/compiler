@@ -1,0 +1,3 @@
+(test
+ (name checker_test)
+ (libraries alcotest lambe))

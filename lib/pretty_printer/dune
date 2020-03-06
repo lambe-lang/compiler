@@ -1,4 +1,0 @@
-(library
- (name lambe_pp)
- (public_name lambe.pp)
- (libraries lambe.ast lambe.checker))

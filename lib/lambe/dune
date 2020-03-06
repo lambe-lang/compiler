@@ -2,4 +2,4 @@
  (name lambe)
  (public_name lambe)
  (modules_without_implementation lambe)
- (libraries lambe.ast lambe.checker lambe.pp))
+ (libraries lambe.ast lambe.syntax lambe.checker lambe.render))
