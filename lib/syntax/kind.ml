@@ -1,8 +1,15 @@
-module Lexeme = Transept.Genlex.Lexeme
-module Genlex = Transept.Genlex.Lexer
+(** The kind parser is able to recognize simple syntaxic construction give by
+    the following grammar:
 
-module Make (Parser : Transept_specs.PARSER with type e = Lexeme.t) = struct
-  open Genlex.Token (Parser)
+    {v
+kind_simple ::= '(' kind ')' | "type"
+kind        ::= kind_simple ("->" kind)?
+    v} *)
+
+module Make
+    (Parser : Transept_specs.PARSER with type e = Transept.Genlex.Lexeme.t) =
+struct
+  open Transept.Genlex.Lexer.Token (Parser)
 
   open Transept.Utils
   open Parser
