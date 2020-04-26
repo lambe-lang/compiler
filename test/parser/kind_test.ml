@@ -9,7 +9,7 @@ let should_parse_kind () =
   let expected = Some Type
   and computed =
     Response.fold
-      (parse Kind.kind @@ lexeme_stream "type")
+      (parse Kind.main @@ lexeme_stream "type")
       (fun (_, a, _) -> Some a)
       (fun _ -> None)
   in
@@ -22,7 +22,7 @@ let should_parse_kind_in_parenthesis () =
   let expected = Some Type
   and computed =
     Response.fold
-      (parse Kind.kind @@ lexeme_stream "( type )")
+      (parse Kind.main @@ lexeme_stream "( type )")
       (fun (_, a, _) -> Some a)
       (fun _ -> None)
   in
@@ -37,7 +37,7 @@ let should_parse_functional_kind () =
   let expected = Some (Arrow (Type, Type))
   and computed =
     Response.fold
-      (parse Kind.kind @@ lexeme_stream "type -> type")
+      (parse Kind.main @@ lexeme_stream "type -> type")
       (fun (_, a, _) -> Some a)
       (fun _ -> None)
   in
@@ -52,7 +52,7 @@ let should_parse_complex_functional_kind () =
   let expected = Some (Arrow (Arrow (Type, Type), Type))
   and computed =
     Response.fold
-      (parse Kind.kind @@ lexeme_stream "(type -> type) -> type")
+      (parse Kind.main @@ lexeme_stream "(type -> type) -> type")
       (fun (_, a, _) -> Some a)
       (fun _ -> None)
   in

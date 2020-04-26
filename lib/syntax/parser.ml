@@ -1,8 +1,6 @@
 module Make
     (CharParser : module type of Transept.Extension.Parser.For_char_list) =
 struct
-  let keywords = [ "type"; "->"; "("; ")"; "["; "]" ]
-
   module CharStream = Transept.Stream.Via_parser (CharParser)
 
   module Parser =
@@ -15,6 +13,7 @@ struct
   module Kind = Kind.Make (Parser)
 
   let lexeme_stream s =
+    let keywords = Kind.keywords in
     let module Genlex = Transept_genlex.Lexer.Make (CharParser) in
     let tokenizer = Genlex.tokenizer_with_spaces keywords in
     CharStream.build tokenizer
