@@ -1,4 +1,4 @@
-module Make
+module Make_via_parser
     (Parser : Transept.Specs.PARSER with type e = Transept.Genlex.Lexeme.t) =
 struct
   open Transept.Genlex.Lexer.Token (Parser)

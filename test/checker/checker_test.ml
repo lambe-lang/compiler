@@ -4,5 +4,5 @@ let () =
     [
       Freevar_test.test_cases
     ; Substitution_test.test_cases
-    ; Unify_test.test_cases
+    ; Unification_test.test_cases
     ]

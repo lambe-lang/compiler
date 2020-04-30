@@ -1,4 +1,4 @@
-open Lambe_checker.Unifier
+open Lambe_checker.Unification
 
 let pp ppf = function
   | CyclicUnification (t1, t2) ->

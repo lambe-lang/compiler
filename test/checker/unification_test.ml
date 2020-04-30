@@ -1,7 +1,7 @@
 open Lambe.Ast.Type
-open Lambe.Checker.Unifier
+open Lambe.Checker.Unification
 
-let unification_error = Alcotest.testable Lambe.Render.Unifier.pp ( = )
+let unification_error = Alcotest.testable Lambe.Render.Unification.pp ( = )
 
 let lambe_type = Alcotest.testable Lambe.Render.Type.pp ( = )
 

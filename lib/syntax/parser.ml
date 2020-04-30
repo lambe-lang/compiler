@@ -10,7 +10,7 @@ struct
         type t = Transept.Genlex.Lexeme.t
       end)
 
-  module Kind = Kind.Make (Parser)
+  module Kind = Kind.Make_via_parser (Parser)
 
   let stream s =
     let keywords = Kind.keywords in
