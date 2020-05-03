@@ -1,12 +1,21 @@
 module Make_via_parser
-    (Parser : Transept.Specs.PARSER with type e = Transept.Genlex.Lexeme.t) =
+    (Parser : Transept.Specs.PARSER with type e = Lexer.Lexeme.t) =
 struct
-  open Transept.Genlex.Lexer.Token (Parser)
+  open Lexer.Token (Parser)
 
   open Transept.Utils
   open Parser
 
-  let keywords = [ "type"; "->"; "("; ")"; "["; "]" ]
+  let keywords = [ "type"; "->"; "("; ")" ]
+
+  (*
+     simple_kind ::=
+            "(" complex_kind ")"
+            "type"
+
+     complex_kind ::=
+            simple_kind ("->" complex_kind)?
+  *)
 
   let rec simple_kind () =
     kwd "("

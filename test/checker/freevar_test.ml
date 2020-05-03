@@ -2,7 +2,7 @@ let should_provide_empty_freevar_from_native () =
   let open Lambe_ast in
   let open Lambe_checker in
   let expected = []
-  and computed = Variables.free_vars Type.(Native Int) in
+  and computed = Variables.free_vars Type.(Ident "Int") in
   Alcotest.(check (list string))
     "should_provide_empty_freevar_from_native" expected computed
 

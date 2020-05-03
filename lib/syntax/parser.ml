@@ -7,15 +7,16 @@ struct
     Transept.Core.Parser.Make_via_stream
       (CharStream)
       (struct
-        type t = Transept.Genlex.Lexeme.t
+        type t = Lexer.Lexeme.t
       end)
 
   module Kind = Kind.Make_via_parser (Parser)
+  module Type = Type.Make_via_parser (Parser)
 
   let stream s =
-    let keywords = Kind.keywords in
-    let module Genlex = Transept_genlex.Lexer.Make (CharParser) in
-    let tokenizer = Genlex.tokenizer_with_spaces keywords in
+    let keywords = Kind.keywords @ Type.keywords in
+    let module Lexer = Lexer.Make (CharParser) in
+    let tokenizer = Lexer.tokenizer_with_spaces keywords in
     CharStream.build tokenizer
       (CharParser.Stream.build @@ Transept.Utils.chars_of_string s)
 

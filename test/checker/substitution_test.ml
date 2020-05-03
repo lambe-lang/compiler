@@ -4,29 +4,29 @@ open Lambe.Checker
 let lambe_type = Alcotest.testable Lambe.Render.Type.pp ( = )
 
 let should_substitute_in_variable () =
-  let expected = Native Int
-  and computed = Substitution.substitute [ "a", Native Int ] (Variable "a") in
+  let expected = Ident "Int"
+  and computed = Substitution.substitute [ "a", Ident "Int" ] (Variable "a") in
   Alcotest.(check lambe_type) "should_substitute_in_variable" expected computed
 
 let should_not_substitute_in_variable () =
   let expected = Variable "b"
-  and computed = Substitution.substitute [ "a", Native Int ] (Variable "b") in
+  and computed = Substitution.substitute [ "a", Ident "Int" ] (Variable "b") in
   Alcotest.(check lambe_type)
     "should_not_substitute_in_variable" expected computed
 
 let should_substitute_in_arrow () =
-  let expected = Arrow (Native Int, Native String)
+  let expected = Arrow (Ident "Int", Ident "String")
   and computed =
-    Substitution.substitute [ "a", Native String ]
-      (Arrow (Native Int, Variable "a"))
+    Substitution.substitute [ "a", Ident "String" ]
+      (Arrow (Ident "Int", Variable "a"))
   in
   Alcotest.(check lambe_type) "should_substitute_in_arrow" expected computed
 
 let should_substitute_in_apply () =
-  let expected = Apply (Native Int, Native String)
+  let expected = Apply (Ident "Int", Ident "String")
   and computed =
-    Substitution.substitute [ "a", Native String ]
-      (Apply (Native Int, Variable "a"))
+    Substitution.substitute [ "a", Ident "String" ]
+      (Apply (Ident "Int", Variable "a"))
   in
   Alcotest.(check lambe_type) "should_substitute_in_apply" expected computed
 
