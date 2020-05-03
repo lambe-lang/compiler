@@ -1,7 +1,7 @@
 open Lambe_ast.Term
 
 let pp_native ppf = function
-  | Int i -> Format.fprintf ppf "%i" i
+  | Float f -> Format.fprintf ppf "%f" f
   | String s -> Format.fprintf ppf "\"%s\"" s
   | Char c -> Format.fprintf ppf "'%c'" c
 

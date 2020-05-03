@@ -12,9 +12,10 @@ struct
 
   module Kind = Kind.Make_via_parser (Parser)
   module Type = Type.Make_via_parser (Parser)
+  module Term = Term.Make_via_parser (Parser)
 
   let stream s =
-    let keywords = Kind.keywords @ Type.keywords in
+    let keywords = Kind.keywords @ Type.keywords @ Term.keywords in
     let module Lexer = Lexer.Make (CharParser) in
     let tokenizer = Lexer.tokenizer_with_spaces keywords in
     CharStream.build tokenizer

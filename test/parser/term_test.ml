@@ -1,4 +1,4 @@
-let lambe_kind = Alcotest.testable Lambe.Render.Kind.pp ( = )
+let lambe_term = Alcotest.testable Lambe.Render.Term.pp ( = )
 
 let transept_lexeme = Alcotest.testable Lambe.Syntax.Lexer.Lexeme.pp ( = )
 
@@ -8,27 +8,28 @@ let should_parse input expected =
   let expected = Ok expected
   and computed =
     Response.fold
-      (parse Kind.main @@ stream input)
+      (parse Term.main @@ stream input)
       (fun (_, a, _) -> Ok a)
       (fun (s, _) -> Error (Stream.position s))
   in
-  Alcotest.(check (result lambe_kind int)) "should_parse" expected computed
+  Alcotest.(check (result lambe_term int)) "should_parse" expected computed
 
 let cases =
-  let open Lambe.Ast.Kind in
+  let open Lambe.Ast.Term in
   [
-    "type", Type
-  ; "(type)", Type
-  ; "type -> type", Arrow (Type, Type)
-  ; "(type) -> type", Arrow (Type, Type)
-  ; "type -> (type)", Arrow (Type, Type)
-  ; "type -> type -> type", Arrow (Type, Arrow (Type, Type))
-  ; "(type -> type) -> type", Arrow (Arrow (Type, Type), Type)
+    "123.45", Native (Float 123.45)
+  ; "\"Hello\"", Native (String "Hello")
+  ; "'c'", Native (Char 'c')
+  ; "a", Variable "a"
+  ; "{ a }", Variable "a"
+  ; "{ a -> a }", Abstraction("a", Variable "a")
+  ; "{ a b -> a }", Abstraction("a", Abstraction("b", Variable "a"))
+  ; "let a = 23 in 'c'", Let ("a", Native (Float 23.), Native (Char 'c'))
   ]
 
 let test_cases =
   let open Alcotest in
-  ( "Kind Parser"
+  ( "Term Parser"
   , List.map
       (fun (input, expected) ->
         test_case ("Should parse " ^ input) `Quick (fun () ->

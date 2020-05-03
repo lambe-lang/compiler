@@ -23,9 +23,9 @@ module Token (Parser : Transept_specs.PARSER with type e = Lexeme.t) : sig
 
   val char : char Parser.t
 
-  val operator : string Parser.t
-
   val ident : string Parser.t
+
+  val operator : string Parser.t
 
   val kwd : string -> string Parser.t
 end

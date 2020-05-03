@@ -4,24 +4,16 @@ struct
   open Lexer.Token (Parser)
 
   open Transept.Utils
+  open Lambe_ast.Kind
   open Parser
 
   let keywords = [ "type"; "->"; "("; ")" ]
 
-  (*
-     simple_kind ::=
-            "(" complex_kind ")"
-            "type"
+  let type_kind = kwd "type" <$> constant Type
 
-     complex_kind ::=
-            simple_kind ("->" complex_kind)?
-  *)
+  let rec block_kind () = kwd "(" &> do_lazy complex_kind <& kwd ")"
 
-  let rec simple_kind () =
-    kwd "("
-    &> do_lazy complex_kind
-    <& kwd ")"
-    <|> (kwd "type" <$> constant Lambe_ast.Kind.Type)
+  and simple_kind () = type_kind <|> do_lazy block_kind
 
   and complex_kind () =
     do_lazy simple_kind

@@ -29,7 +29,21 @@ module Make (Parser : Transept_specs.PARSER with type e = char) = struct
     rep
       (in_list
          [
-           '<'; '>'; '+'; '-'; '*'; '/'; ','; '~'; '='; '|'; '&'; '_'; '['; ']'; ':'
+           '<'
+         ; '>'
+         ; '+'
+         ; '-'
+         ; '*'
+         ; '/'
+         ; ','
+         ; '~'
+         ; '='
+         ; '|'
+         ; '&'
+         ; '_'
+         ; '['
+         ; ']'
+         ; ':'
          ])
     <$> string_of_chars
 
@@ -41,11 +55,13 @@ module Make (Parser : Transept_specs.PARSER with type e = char) = struct
       <$> string_of_chars
     and skipped = optrep s <$> constant () in
     skipped
-    &> (keywords <$> (fun e -> Keyword e))
+    &> ( operator
+       <$> fun e ->
+       if List.exists (fun k -> e = k) l then Keyword e else Operator e )
+    <|> (keywords <$> (fun e -> Keyword e))
     <|> (float <$> (fun e -> Float e))
     <|> (string <$> (fun e -> String e))
     <|> (char <$> (fun e -> Char e))
-    <|> (operator <$> (fun e -> Operator e))
     <|> (ident <$> (fun e -> Ident e))
     <& skipped
 

@@ -1,5 +1,5 @@
 type native =
-  | Int of int
+  | Float of float
   | String of string
   | Char of char
 

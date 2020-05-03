@@ -5,14 +5,14 @@ let transept_lexeme = Alcotest.testable Lambe.Syntax.Lexer.Lexeme.pp ( = )
 let should_parse input expected =
   let module CharParser = Transept.Extension.Parser.For_char_list in
   let open Lambe.Syntax.Parser.Make (CharParser) in
-  let expected = Some expected
+  let expected = Ok expected
   and computed =
     Response.fold
       (parse Type.main @@ stream input)
-      (fun (_, a, _) -> Some a)
-      (fun _ -> None)
+      (fun (_, a, _) -> Ok a)
+      (fun (s, _) -> Error (Stream.position s))
   in
-  Alcotest.(check (option lambe_type)) "should_parse" expected computed
+  Alcotest.(check (result lambe_type int)) "should_parse" expected computed
 
 let cases =
   let open Lambe.Ast.Type in
@@ -24,8 +24,10 @@ let cases =
   ; "(->) a b", Apply (Apply (Ident "->", Variable "a"), Variable "b")
   ; "(~>) a b", Apply (Apply (Ident "~>", Variable "a"), Variable "b")
   ; "a -> b", Apply (Apply (Ident "->", Variable "a"), Variable "b")
-  ; "a ~> b", Apply (Apply (Ident "~>", Variable "a"), Variable "b")
-  ; "((->) a) ((::) b)", Apply (Apply (Ident "->", Variable "a"), Apply (Ident "::", Variable "b"))
+  ; "a * b", Apply (Apply (Ident "*", Variable "a"), Variable "b")
+  ; ( "((->) a) ((::) b)"
+    , Apply (Apply (Ident "->", Variable "a"), Apply (Ident "::", Variable "b"))
+    )
   ; "map a b", Apply (Apply (Variable "map", Variable "a"), Variable "b")
   ]
 
