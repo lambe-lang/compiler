@@ -21,9 +21,9 @@ let cases =
   ; "\"Hello\"", Native (String "Hello")
   ; "'c'", Native (Char 'c')
   ; "a", Variable "a"
-  ; "{ a }", Variable "a"
-  ; "{ a -> a }", Abstraction("a", Variable "a")
-  ; "{ a b -> a }", Abstraction("a", Abstraction("b", Variable "a"))
+  ; "{ a }", Abstraction ("_", Variable "a")
+  ; "{ a -> a }", Abstraction ("a", Variable "a")
+  ; "{ a b -> a }", Abstraction ("a", Abstraction ("b", Variable "a"))
   ; "let a = 23 in 'c'", Let ("a", Native (Float 23.), Native (Char 'c'))
   ]
 

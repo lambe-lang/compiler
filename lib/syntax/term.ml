@@ -32,7 +32,7 @@ struct
     <& kwd "}"
     <$> function
     | Some l, e -> List.fold_right (fun e a -> Abstraction (e, a)) l e
-    | None, e -> e
+    | None, e -> Abstraction ("_", e)
 
   and simple_term () =
     do_lazy let_term <|> native_term <|> ident_term <|> do_lazy function_term
