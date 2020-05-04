@@ -11,22 +11,12 @@ let should_substitute_in_variable () =
 let should_not_substitute_in_variable () =
   let expected = Variable "b"
   and computed = Substitution.substitute [ "a", Ident "Int" ] (Variable "b") in
-  Alcotest.(check lambe_type)
-    "should_not_substitute_in_variable" expected computed
-
-let should_substitute_in_arrow () =
-  let expected = Arrow (Ident "Int", Ident "String")
-  and computed =
-    Substitution.substitute [ "a", Ident "String" ]
-      (Arrow (Ident "Int", Variable "a"))
-  in
-  Alcotest.(check lambe_type) "should_substitute_in_arrow" expected computed
+  Alcotest.(check lambe_type) "should_not_substitute_in_variable" expected computed
 
 let should_substitute_in_apply () =
   let expected = Apply (Ident "Int", Ident "String")
   and computed =
-    Substitution.substitute [ "a", Ident "String" ]
-      (Apply (Ident "Int", Variable "a"))
+    Substitution.substitute [ "a", Ident "String" ] (Apply (Ident "Int", Variable "a"))
   in
   Alcotest.(check lambe_type) "should_substitute_in_apply" expected computed
 
@@ -34,12 +24,7 @@ let test_cases =
   ( "Subsitution"
   , let open Alcotest in
     [
-      test_case "Should substitute in a variable" `Quick
-        should_substitute_in_variable
-    ; test_case "Should not substitute in a variable" `Quick
-        should_not_substitute_in_variable
-    ; test_case "Should not substitute in an arrow" `Quick
-        should_substitute_in_arrow
-    ; test_case "Should not substitute in an apply" `Quick
-        should_substitute_in_apply
+      test_case "Should substitute in a variable" `Quick should_substitute_in_variable
+    ; test_case "Should not substitute in a variable" `Quick should_not_substitute_in_variable
+    ; test_case "Should not substitute in an apply" `Quick should_substitute_in_apply
     ] )

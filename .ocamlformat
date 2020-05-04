@@ -1,5 +1,5 @@
 version = 0.14.1
-margin = 80
+margin = 100
 max-indent = 68
 
 align-cases = false

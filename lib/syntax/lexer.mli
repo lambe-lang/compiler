@@ -1,5 +1,6 @@
 module Lexeme : sig
   type t =
+    | Integer of int
     | Float of float
     | String of string
     | Char of char
@@ -17,6 +18,8 @@ module Make (Parser : Transept_specs.PARSER with type e = char) : sig
 end
 
 module Token (Parser : Transept_specs.PARSER with type e = Lexeme.t) : sig
+  val integer : int Parser.t
+
   val float : float Parser.t
 
   val string : string Parser.t

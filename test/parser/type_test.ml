@@ -25,9 +25,9 @@ let cases =
   ; "(~>) a b", Apply (Apply (Ident "~>", Variable "a"), Variable "b")
   ; "a -> b", Apply (Apply (Ident "->", Variable "a"), Variable "b")
   ; "a * b", Apply (Apply (Ident "*", Variable "a"), Variable "b")
-  ; ( "((->) a) ((::) b)"
-    , Apply (Apply (Ident "->", Variable "a"), Apply (Ident "::", Variable "b"))
-    )
+  ; "list a | b", Apply (Apply (Ident "|", Apply (Variable "list", Variable "a")), Variable "b")
+  ; "a | list b", Apply (Apply (Ident "|", Variable "a"), Apply (Variable "list", Variable "b"))
+  ; "((->) a) ((::) b)", Apply (Apply (Ident "->", Variable "a"), Apply (Ident "::", Variable "b"))
   ; "map a b", Apply (Apply (Variable "map", Variable "a"), Variable "b")
   ]
 
@@ -36,6 +36,5 @@ let test_cases =
   ( "Type Parser"
   , List.map
       (fun (input, expected) ->
-        test_case ("Should parse " ^ input) `Quick (fun () ->
-            should_parse input expected))
+        test_case ("Should parse " ^ input) `Quick (fun () -> should_parse input expected))
       cases )

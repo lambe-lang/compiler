@@ -1,6 +1,4 @@
-module Make_via_parser
-    (Parser : Transept.Specs.PARSER with type e = Lexer.Lexeme.t) =
-struct
+module Make_via_parser (Parser : Transept.Specs.PARSER with type e = Lexer.Lexeme.t) = struct
   open Lexer.Token (Parser)
 
   open Parser

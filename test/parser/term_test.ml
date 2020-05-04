@@ -21,10 +21,25 @@ let cases =
   ; "\"Hello\"", Native (String "Hello")
   ; "'c'", Native (Char 'c')
   ; "a", Variable "a"
-  ; "{ a }", Abstraction ("_", Variable "a")
+  ; "{ _ }", Abstraction ("_", Variable "_")
   ; "{ a -> a }", Abstraction ("a", Variable "a")
   ; "{ a b -> a }", Abstraction ("a", Abstraction ("b", Variable "a"))
+  ; "a b c", Apply (Apply (Variable "a", Variable "b"), Variable "c")
+  ; "a (b c)", Apply (Variable "a", Apply (Variable "b", Variable "c"))
   ; "let a = 23 in 'c'", Let ("a", Native (Float 23.), Native (Char 'c'))
+  ; ( "let a b = b in a 23"
+    , Let ("a", Abstraction ("b", Variable "b"), Apply (Variable "a", Native (Float 23.))) )
+  ; "a.m", Apply (Variable "a", Ident "m")
+  ; "a.(::)", Apply (Variable "a", Ident "::")
+  ; "a ::", Apply (Variable "a", Ident "::")
+  ; "when a { is (::) -> a }", When (None, Variable "a", [ Lambe.Ast.Type.Ident "::", Variable "a" ])
+  ; ( "when a { is (::) -> true is Nil -> false }"
+    , When
+        ( None
+        , Variable "a"
+        , [
+            Lambe.Ast.Type.Ident "::", Variable "true"; Lambe.Ast.Type.Ident "Nil", Variable "false"
+          ] ) )
   ]
 
 let test_cases =
@@ -32,6 +47,5 @@ let test_cases =
   ( "Term Parser"
   , List.map
       (fun (input, expected) ->
-        test_case ("Should parse " ^ input) `Quick (fun () ->
-            should_parse input expected))
+        test_case ("Should parse " ^ input) `Quick (fun () -> should_parse input expected))
       cases )

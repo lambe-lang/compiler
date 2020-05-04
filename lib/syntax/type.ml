@@ -1,6 +1,4 @@
-module Make_via_parser
-    (Parser : Transept.Specs.PARSER with type e = Lexer.Lexeme.t) =
-struct
+module Make_via_parser (Parser : Transept.Specs.PARSER with type e = Lexer.Lexeme.t) = struct
   open Lexer.Token (Parser)
 
   open Parser
@@ -15,9 +13,7 @@ struct
   let ident_type = ident <$> (fun i -> Variable i)
 
   let rec block_type () =
-    kwd "("
-    &> (operator <$> (fun i -> Ident i) <|> do_lazy complex_type)
-    <& kwd ")"
+    kwd "(" &> (operator <$> (fun i -> Ident i) <|> do_lazy complex_type) <& kwd ")"
 
   and apply_type () =
     do_lazy simple_type
@@ -29,8 +25,7 @@ struct
   and complex_type () =
     do_lazy apply_type
     <&> opt (operator <&> do_lazy complex_type)
-    <$> function
-    | k1, None -> k1 | k1, Some (op, k2) -> Apply (Apply (Ident op, k1), k2)
+    <$> (function k1, None -> k1 | k1, Some (op, k2) -> Apply (Apply (Ident op, k1), k2))
 
   let main = complex_type ()
 end

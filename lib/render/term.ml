@@ -1,16 +1,22 @@
 open Lambe_ast.Term
 
 let pp_native ppf = function
+  | Integer f -> Format.fprintf ppf "%i" f
   | Float f -> Format.fprintf ppf "%f" f
   | String s -> Format.fprintf ppf "\"%s\"" s
   | Char c -> Format.fprintf ppf "'%c'" c
 
-let rec pp ppf = function
+let rec pp_case ppf = function
+  | [] -> ()
+  | (t, e) :: l -> Format.fprintf ppf " is %a -> %a %a" Type.pp t pp e pp_case l
+
+and pp ppf = function
   | Native n -> Format.fprintf ppf "%a" pp_native n
   | Variable s -> Format.fprintf ppf "\"%s\"" s
   | Abstraction (n, t) -> Format.fprintf ppf "{%s -> %a}" n pp t
   | Apply (t1, t2) -> Format.fprintf ppf "(%a) %a" pp t1 pp t2
   | Ident id -> Format.fprintf ppf "%s" id
   | Let (n, t1, t2) -> Format.fprintf ppf "let %s = %a in %a" n pp t1 pp t2
+  | When (None, e, c) -> Format.fprintf ppf "when %a { %a }" pp e pp_case c
+  | When (Some n, e, c) -> Format.fprintf ppf "when let %s = %a { %a }" n pp e pp_case c
   | LetImpl _ -> Format.fprintf ppf "TBD"
-  | When _ -> Format.fprintf ppf "TBD"

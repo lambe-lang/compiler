@@ -1,5 +1,6 @@
 module Lexeme = struct
   type t =
+    | Integer of int
     | Float of float
     | String of string
     | Char of char
@@ -8,6 +9,7 @@ module Lexeme = struct
     | Keyword of string
 
   let pp ppf = function
+    | Integer value -> Format.fprintf ppf "%i" value
     | Float value -> Format.fprintf ppf "%f" value
     | String value -> Format.fprintf ppf "\"%s\"" value
     | Char value -> Format.fprintf ppf "'%c'" value
@@ -24,42 +26,24 @@ module Make (Parser : Transept_specs.PARSER with type e = char) = struct
 
   open Transept_extension.Literals.Make (Parser)
 
-  let operator =
-    let open Parser in
-    rep
-      (in_list
-         [
-           '<'
-         ; '>'
-         ; '+'
-         ; '-'
-         ; '*'
-         ; '/'
-         ; ','
-         ; '~'
-         ; '='
-         ; '|'
-         ; '&'
-         ; '_'
-         ; '['
-         ; ']'
-         ; ':'
-         ])
-    <$> string_of_chars
+  let first =
+    [ '<'; '>'; '+'; '-'; '*'; '/'; ','; '~'; '='; '|'; '&'; '_'; '['; ']'; ':'; '$'; '@'; '.' ]
+
+  let next = first
+
+  let operator = Parser.(to_list (in_list first <&> optrep (in_list next)) <$> string_of_chars)
 
   let tokenizer s l =
     let open Parser in
     let keywords =
-      List.fold_left (fun p e -> p <|> atoms e) fail
-      @@ List.map chars_of_string l
+      List.fold_left (fun p e -> p <|> atoms e) fail @@ List.map chars_of_string l
       <$> string_of_chars
     and skipped = optrep s <$> constant () in
     skipped
-    &> ( operator
-       <$> fun e ->
-       if List.exists (fun k -> e = k) l then Keyword e else Operator e )
+    &> (operator <$> (fun e -> if List.exists (fun k -> e = k) l then Keyword e else Operator e))
     <|> (keywords <$> (fun e -> Keyword e))
-    <|> (float <$> (fun e -> Float e))
+    <|> (do_try float <$> (fun e -> Float e))
+    <|> (integer <$> (fun e -> Integer e))
     <|> (string <$> (fun e -> String e))
     <|> (char <$> (fun e -> Char e))
     <|> (ident <$> (fun e -> Ident e))
@@ -71,6 +55,8 @@ end
 module Token (Parser : Transept_specs.PARSER with type e = Lexeme.t) = struct
   open Parser
   open Lexeme
+
+  let integer = any >>= (function Integer f -> return f | _ -> fail)
 
   let float = any >>= (function Float f -> return f | _ -> fail)
 

@@ -1,4 +1,5 @@
 type native =
+  | Integer of int
   | Float of float
   | String of string
   | Char of char
@@ -15,4 +16,4 @@ type t =
   | Let of string * t * t
   | LetImpl of Type.t list * Type.t option * t list * t
   (* Smart cast *)
-  | When of string * t * (Type.t * t) list
+  | When of string option * t * (Type.t * t) list
