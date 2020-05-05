@@ -13,13 +13,18 @@ module Make_via_parser (Parser : Transept.Specs.PARSER with type e = Lexer.Lexem
     <|> (string <$> (fun f -> Native (String f)))
     <|> (char <$> (fun f -> Native (Char f)))
 
-  let ident_term = ident <|> kwd "_" <$> (fun f -> Variable f) <|> (operator <$> (fun f -> Ident f))
+  let ident_term =
+    ident
+    <|> kwd "_"
+    <|> operator
+    <$> (fun f -> Variable f)
+    <|> (do_try (kwd "(" <&> kwd ")") <$> (fun _ -> Variable "()"))
 
   let name = ident <|> (kwd "(" &> operator <& kwd ")") <|> kwd "_"
 
-  let name_term = name <$> (fun f -> Ident f)
+  let name_term = name <$> (fun f -> Variable f)
 
-  let name_type = name <$> (fun f -> Lambe_ast.Type.Ident f)
+  let name_type = name <$> (fun f -> Lambe_ast.Type.Variable f)
 
   let rec let_term () =
     kwd "let"
@@ -52,7 +57,8 @@ module Make_via_parser (Parser : Transept.Specs.PARSER with type e = Lexer.Lexem
 
   and case_term () = kwd "is" &> name_type <& kwd "->" <&> do_lazy apply_term
 
-  and block_term () = kwd "(" &> (operator <$> (fun o -> Ident o) <|> do_lazy apply_term) <& kwd ")"
+  and block_term () =
+    kwd "(" &> (operator <$> (fun o -> Variable o) <|> do_lazy apply_term) <& kwd ")"
 
   and simple_term () =
     do_lazy let_term

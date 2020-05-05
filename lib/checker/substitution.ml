@@ -9,6 +9,5 @@ let substitute =
         if n = m then Forall (n, k, substitute n v t2) else Forall (m, k, substitute n v t2)
       in
       Forall (m, k, t2')
-    | t -> t
   in
   List.fold_right (fun (n, v) t -> substitute n v t)

@@ -7,6 +7,5 @@ let free_vars =
     | Variable v -> add v unbound
     | Apply (t1, t2) -> from (from unbound t2) t1
     | Forall (n, _, t2) -> remove n @@ from unbound t2
-    | _ -> unbound
   in
   from []

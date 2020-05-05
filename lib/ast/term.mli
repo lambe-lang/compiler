@@ -12,7 +12,6 @@ type t =
   | Abstraction of string * t
   | Apply of t * t
   (* Let constructions *)
-  | Ident of string
   | Let of string * t * t
   | LetImpl of Type.t list * Type.t option * t list * t
   (* Smart cast *)
