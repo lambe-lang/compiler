@@ -1,10 +1,18 @@
+type tparams = (string * Kind.t) list
+
+type with_types = Type.t list
+
+type for_type = Type.t option
+
 type t =
   (* Trait expression *)
-  | Impl of Type.t list * Type.t option * t list
-  | Trait of string * (string * Kind.t) list * Type.t list * Type.t option * t list
+  | Impl of tparams * Type.t * for_type * with_types * t list
+  | Trait of string * tparams * for_type * with_types * t list
+  (* Kind expression *)
+  | Kind of string * Kind.t
   (* Type expression *)
-  | Type of Type.t * Type.t list
-  | Data of Type.t * (string * Type.t) list
-  (* Function expression *)
-  | Sig of string * Type.t * Type.t option * Type.t list
+  | Type of string * tparams * with_types
+  | Data of string * tparams * (string * Type.t) list
+  (* Function type & expression *)
+  | Sig of string * Type.t * for_type * with_types
   | Def of string * Term.t

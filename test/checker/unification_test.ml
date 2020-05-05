@@ -14,7 +14,9 @@ let should_unify_same_type () =
 
 let should_unify_apply_type () =
   let expected = Ok [ "x", Variable "Int"; "y", Variable "String" ]
-  and computed = unify (Apply (Variable "x", Variable "y")) (Apply (Variable "Int", Variable "String")) in
+  and computed =
+    unify (Apply (Variable "x", Variable "y")) (Apply (Variable "Int", Variable "String"))
+  in
   Alcotest.(check unify_type) "should_unify_apply_type" expected computed
 
 let should_not_unify_apply_type_cyclic () =

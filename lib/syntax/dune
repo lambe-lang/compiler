@@ -1,4 +1,5 @@
 (library
  (name lambe_syntax)
  (public_name lambe.syntax)
- (libraries transept lambe.ast))
+ (libraries transept lambe.ast)
+ (modules_without_implementation entry))

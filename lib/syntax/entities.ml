@@ -5,10 +5,7 @@ module Make_via_parser (Parser : Transept.Specs.PARSER with type e = Lexer.Lexem
 
   (* open Lambe_ast.Entities *)
 
-  let keywords = [ "sig"; "def"; "trait"; "type"; "data"; ":" ]
-
-  (*
-  *)
+  let keywords = [ "kind"; "type"; "data"; "sig"; "def"; "trait" ]
 
   let main = fail
 end

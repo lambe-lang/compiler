@@ -9,8 +9,8 @@ module Make (CharParser : module type of Transept.Extension.Parser.For_char_list
       end)
 
   module Kind = Kind.Make_via_parser (Parser)
-  module Type = Type.Make_via_parser (Parser)
-  module Term = Term.Make_via_parser (Parser)
+  module Type = Type.Make_via_parser (Parser) (Kind)
+  module Term = Term.Make_via_parser (Parser) (Kind) (Type)
 
   let stream s =
     let keywords = Kind.keywords @ Type.keywords @ Term.keywords in

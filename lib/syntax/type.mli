@@ -1,5 +1,4 @@
-module Make_via_parser (Parser : Transept.Specs.PARSER with type e = Lexer.Lexeme.t) : sig
-  val keywords : string list
-
-  val main : Lambe_ast.Type.t Parser.t
-end
+module Make_via_parser
+    (Parser : Transept.Specs.PARSER with type e = Lexer.Lexeme.t)
+    (Kind : Entry.API with type t = Lambe_ast.Kind.t and type 'a p = 'a Parser.t) :
+  Entry.API with type t = Lambe_ast.Type.t and type 'a p = 'a Parser.t

@@ -1,4 +1,11 @@
-module Make_via_parser (Parser : Transept.Specs.PARSER with type e = Lexer.Lexeme.t) = struct
+module Make_via_parser
+    (Parser : Transept.Specs.PARSER with type e = Lexer.Lexeme.t)
+    (Kind : Entry.API with type t = Lambe_ast.Kind.t and type 'a p = 'a Parser.t) =
+struct
+  type t = Lambe_ast.Type.t
+
+  type 'a p = 'a Parser.t
+
   open Lexer.Token (Parser)
 
   open Parser
@@ -11,6 +18,9 @@ module Make_via_parser (Parser : Transept.Specs.PARSER with type e = Lexer.Lexem
   let self_type = kwd "self" <$> (fun i -> Variable i)
 
   let ident_type = ident <$> (fun i -> Variable i)
+
+  let type_param =
+    kwd "(" &> ident <&> Kind.main <& kwd ")" <|> (ident <$> (fun n -> n, Lambe_ast.Kind.Type))
 
   let rec block_type () =
     kwd "(" &> (operator <$> (fun i -> Variable i) <|> do_lazy forall_type) <& kwd ")"
@@ -28,10 +38,10 @@ module Make_via_parser (Parser : Transept.Specs.PARSER with type e = Lexer.Lexem
     <$> (function k1, None -> k1 | k1, Some (op, k2) -> Apply (Apply (Variable op, k1), k2))
 
   and forall_type () =
-    opt (kwd "forall" &> rep ident <& kwd ".")
+    opt (kwd "forall" &> rep type_param <& kwd ".")
     <$> (function None -> [] | Some l -> l)
     <&> do_lazy complex_type
-    <$> (function l, t -> List.fold_right (fun n a -> Forall (n, Lambe_ast.Kind.Type, a)) l t)
+    <$> (function l, t -> List.fold_right (fun (n, k) a -> Forall (n, k, a)) l t)
 
   let main = forall_type ()
 end
