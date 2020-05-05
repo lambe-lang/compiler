@@ -33,12 +33,13 @@ let cases =
   ; "a.(::)", Apply (Variable "a", Ident "::")
   ; "a ::", Apply (Variable "a", Ident "::")
   ; "when a { is (::) -> a }", When (None, Variable "a", [ Lambe.Ast.Type.Ident "::", Variable "a" ])
-  ; ( "when a { is (::) -> true is Nil -> false }"
+  ; ( "when a { is (::) -> f true is Nil -> f false }"
     , When
         ( None
         , Variable "a"
         , [
-            Lambe.Ast.Type.Ident "::", Variable "true"; Lambe.Ast.Type.Ident "Nil", Variable "false"
+            Lambe.Ast.Type.Ident "::", Apply (Variable "f", Variable "true")
+          ; Lambe.Ast.Type.Ident "Nil", Apply (Variable "f", Variable "false")
           ] ) )
   ]
 

@@ -29,6 +29,8 @@ let cases =
   ; "a | list b", Apply (Apply (Ident "|", Variable "a"), Apply (Variable "list", Variable "b"))
   ; "((->) a) ((::) b)", Apply (Apply (Ident "->", Variable "a"), Apply (Ident "::", Variable "b"))
   ; "map a b", Apply (Apply (Variable "map", Variable "a"), Variable "b")
+  ; ( "forall a b.a"
+    , Forall ("a", Lambe_ast.Kind.Type, Forall ("b", Lambe_ast.Kind.Type, Variable "a")) )
   ]
 
 let test_cases =
