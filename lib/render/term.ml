@@ -10,13 +10,12 @@ let rec pp_case ppf = function
   | [] -> ()
   | (t, e) :: l -> Format.fprintf ppf " is %a -> %a %a" Type.pp t pp e pp_case l
 
+and pp_when_let ppf = function None -> () | Some n -> Format.fprintf ppf "let %s =" n
+
 and pp ppf = function
   | Native n -> Format.fprintf ppf "%a" pp_native n
   | Variable s -> Format.fprintf ppf "%s" s
   | Abstraction (n, t) -> Format.fprintf ppf "{%s -> %a}" n pp t
   | Apply (t1, t2) -> Format.fprintf ppf "(%a) %a" pp t1 pp t2
   | Let (n, t1, t2) -> Format.fprintf ppf "let %s = %a in %a" n pp t1 pp t2
-  | When (None, e, c) -> Format.fprintf ppf "when %a { %a }" pp e pp_case c
-  | When (Some n, e, c) ->
-    Format.fprintf ppf "when let %s = %a { %a }" n pp e pp_case c
-  | LetImpl _ -> Format.fprintf ppf "TBD"
+  | When (n, e, c) -> Format.fprintf ppf "when %a%a { %a }" pp_when_let n pp e pp_case c

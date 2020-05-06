@@ -17,38 +17,23 @@ let should_parse input expected =
 let cases =
   let open Lambe.Ast in
   [
-    ( "kind (->) = type -> type -> type"
-    , Entity.Kind ("->", Kind.(Arrow (Type, Arrow (Type, Type)))) )
+    "kind (->) = type -> type -> type", Entity.Kind ("->", Kind.(Arrow (Type, Arrow (Type, Type))))
   ; ( "sig (::) : forall a. list a"
     , Entity.Sig
-        ( "::"
-        , Type.(Forall ("a", Kind.Type, Apply (Variable "list", Variable "a")))
-        , None
-        , [] ) )
-  ; ( "sig (::) : a for a"
-    , Entity.Sig ("::", Type.Variable "a", Some (Type.Variable "a"), []) )
-  ; ( "sig (::) : a with a"
-    , Entity.Sig ("::", Type.Variable "a", None, [ Type.Variable "a" ]) )
+        ("::", Type.(Forall ("a", Kind.Type, Apply (Variable "list", Variable "a"))), None, []) )
+  ; "sig (::) : a for a", Entity.Sig ("::", Type.Variable "a", Some (Type.Variable "a"), [])
+  ; "sig (::) : a with a", Entity.Sig ("::", Type.Variable "a", None, [ Type.Variable "a" ])
   ; ( "sig (::) : a for a with a"
-    , Entity.Sig
-        ( "::"
-        , Type.Variable "a"
-        , Some (Type.Variable "a")
-        , [ Type.Variable "a" ] ) )
+    , Entity.Sig ("::", Type.Variable "a", Some (Type.Variable "a"), [ Type.Variable "a" ]) )
   ; ( "sig (::) : a for a with a with b"
     , Entity.Sig
-        ( "::"
-        , Type.Variable "a"
-        , Some (Type.Variable "a")
-        , [ Type.Variable "a"; Type.Variable "b" ] ) )
+        ("::", Type.Variable "a", Some (Type.Variable "a"), [ Type.Variable "a"; Type.Variable "b" ])
+    )
   ; ( "sig (++) : forall a. self -> self for int"
     , Entity.Sig
         ( "++"
         , (let open Type in
-          Forall
-            ( "a"
-            , Kind.Type
-            , Apply (Apply (Variable "->", Variable "self"), Variable "self") ))
+          Forall ("a", Kind.Type, Apply (Apply (Variable "->", Variable "self"), Variable "self")))
         , Some (Type.Variable "int")
         , [] ) )
   ; ( "sig (=) : forall a. self -> self -> bool for a with Eq a"
@@ -60,8 +45,7 @@ let cases =
             , Kind.Type
             , Apply
                 ( Apply (Variable "->", Variable "self")
-                , Apply (Apply (Variable "->", Variable "self"), Variable "bool")
-                ) ))
+                , Apply (Apply (Variable "->", Variable "self"), Variable "bool") ) ))
         , Some (Type.Variable "a")
         , [ Type.(Apply (Variable "Eq", Variable "a")) ] ) )
   ; ( "def (++) a b = a + b"
@@ -69,24 +53,16 @@ let cases =
         ( "++"
         , let open Term in
           Abstraction
-            ( "a"
-            , Abstraction
-                ("b", Apply (Apply (Variable "a", Variable "+"), Variable "b"))
-            ) ) )
+            ("a", Abstraction ("b", Apply (Apply (Variable "a", Variable "+"), Variable "b"))) ) )
   ; "data Zero", Entity.Data ("Zero", [], [])
-  ; ( "data Succ { p : Peano } "
-    , Entity.Data ("Succ", [], [ "p", Type.Variable "Peano" ]) )
+  ; "data Succ { p : Peano } ", Entity.Data ("Succ", [], [ "p", Type.Variable "Peano" ])
   ; ( "data List a { h : a; t : List a } "
     , Entity.Data
         ( "List"
         , [ "a", Kind.Type ]
-        , [
-            "h", Type.Variable "a"
-          ; ("t", Type.(Apply (Variable "List", Variable "a")))
-          ] ) )
+        , [ "h", Type.Variable "a"; ("t", Type.(Apply (Variable "List", Variable "a"))) ] ) )
   ; ( "type Peano = Zero | Succ"
-    , Entity.Enum ("Peano", [], [ Type.Variable "Zero"; Type.Variable "Succ" ])
-    )
+    , Entity.Enum ("Peano", [], [ Type.Variable "Zero"; Type.Variable "Succ" ]) )
   ; ( "type fun a b = a -> b"
     , Entity.Type
         ( "fun"
@@ -101,15 +77,10 @@ let cases =
         , []
         , [
             Entity.Sig
-              ( "+"
-              , (let open Type in
-                Apply (Apply (Variable "->", Variable "self"), Variable "self"))
-              , None
-              , [] )
+              ("+", Type.(Apply (Apply (Variable "->", Variable "self"), Variable "self")), None, [])
           ] ) )
   ; ( "trait Combinable a for a"
-    , Entity.Trait
-        ("Combinable", [ "a", Kind.Type ], Some (Variable "a"), [], []) )
+    , Entity.Trait ("Combinable", [ "a", Kind.Type ], Some (Variable "a"), [], []) )
   ]
 
 let test_cases =
@@ -117,6 +88,5 @@ let test_cases =
   ( "Entity Parser"
   , List.map
       (fun (input, expected) ->
-        test_case ("Should parse " ^ input) `Quick (fun () ->
-            should_parse input expected))
+        test_case ("Should parse " ^ input) `Quick (fun () -> should_parse input expected))
       cases )

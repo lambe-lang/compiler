@@ -12,10 +12,7 @@ struct
   open Parser
   open Lambe_ast.Term
 
-  let keywords =
-    [
-      "self"; "("; ")"; "{"; "}"; "let"; "="; "->"; "in"; "."; "when"; "is"; "_"
-    ]
+  let keywords = [ "self"; "("; ")"; "{"; "}"; "let"; "="; "->"; "in"; "."; "when"; "is"; "_" ]
 
   let native_term =
     integer
@@ -47,8 +44,7 @@ struct
     <& kwd "in"
     <&> do_lazy apply_term
     <$> function
-    | ((i, l), a), b ->
-      Let (i, List.fold_right (fun t a -> Abstraction (t, a)) l a, b)
+    | ((i, l), a), b -> Let (i, List.fold_right (fun t a -> Abstraction (t, a)) l a, b)
 
   and function_term () =
     kwd "{"
@@ -71,9 +67,7 @@ struct
   and case_term () = kwd "is" &> name_type <& kwd "->" <&> do_lazy apply_term
 
   and block_term () =
-    kwd "("
-    &> (operator <$> (fun o -> Variable o) <|> do_lazy apply_term)
-    <& kwd ")"
+    kwd "(" &> (operator <$> (fun o -> Variable o) <|> do_lazy apply_term) <& kwd ")"
 
   and simple_term () =
     do_lazy let_term

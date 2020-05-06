@@ -13,6 +13,5 @@ type t =
   | Apply of t * t
   (* Let constructions *)
   | Let of string * t * t
-  | LetImpl of Type.t list * Type.t option * t list * t
   (* Smart cast *)
   | When of string option * t * (Type.t * t) list
