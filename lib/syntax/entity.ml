@@ -23,6 +23,7 @@ struct
     ; "sig"
     ; "def"
     ; "trait"
+    ; "impl"
     ; "("
     ; ")"
     ; "="
@@ -31,6 +32,8 @@ struct
     ; "|"
     ; "for"
     ; "with"
+    ; "forall"
+    ; "."
     ]
 
   let kind_name = ident <|> (kwd "(" &> (operator <|> kwd "->") <& kwd ")")
@@ -73,13 +76,17 @@ struct
     <&> Kind.main
     <$> (function n, t -> Kind (n, t))
 
+  let for_directive = opt (kwd "for" &> Type.main)
+
+  let with_directive = optrep (kwd "with" &> Type.main)
+
   let sig_entity =
     kwd "sig"
     &> sig_name
     <& kwd ":"
     <&> Type.main
-    <&> opt (kwd "for" &> Type.main)
-    <&> optrep (kwd "with" &> Type.main)
+    <&> for_directive
+    <&> with_directive
     <$> (function ((n, t), f), w -> Sig (n, t, f, w))
 
   let def_entity =
@@ -92,8 +99,35 @@ struct
     | (n, l), t ->
       Def (n, List.fold_right (fun e a -> Lambe_ast.Term.Abstraction (e, a)) l t)
 
-  let entity () =
-    data_entity <|> type_entity <|> kind_entity <|> sig_entity <|> def_entity
+  let rec trait_entity () =
+    kwd "trait"
+    &> sig_name
+    <&> optrep type_param
+    <&> for_directive
+    <&> with_directive
+    <&> ( opt (kwd "{" &> optrep (do_lazy entity) <& kwd "}")
+        <$> (function None -> [] | Some l -> l) )
+    <$> (function (((n, p), f), w), e -> Trait (n, p, f, w, e))
+
+  and impl_entity () =
+    kwd "impl"
+    &> ( opt (kwd "forall" &> optrep type_param <& kwd ".")
+       <$> (function None -> [] | Some l -> l) )
+    <&> Type.main
+    <&> for_directive
+    <&> with_directive
+    <&> ( opt (kwd "{" &> optrep (do_lazy entity) <& kwd "}")
+        <$> (function None -> [] | Some l -> l) )
+    <$> (function (((p, t), f), w), e -> Impl (p, t, f, w, e))
+
+  and entity () =
+    data_entity
+    <|> type_entity
+    <|> kind_entity
+    <|> sig_entity
+    <|> def_entity
+    <|> do_lazy trait_entity
+    <|> do_lazy impl_entity
 
   let main = entity ()
 end

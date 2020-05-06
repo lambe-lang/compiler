@@ -92,6 +92,24 @@ let cases =
         ( "fun"
         , [ "a", Kind.Type; "b", Kind.Type ]
         , Apply (Apply (Variable "->", Variable "a"), Variable "b") ) )
+  ; "trait Combinable", Entity.Trait ("Combinable", [], None, [], [])
+  ; ( "trait Combinable { sig (+) : self -> self }"
+    , Entity.Trait
+        ( "Combinable"
+        , []
+        , None
+        , []
+        , [
+            Entity.Sig
+              ( "+"
+              , (let open Type in
+                Apply (Apply (Variable "->", Variable "self"), Variable "self"))
+              , None
+              , [] )
+          ] ) )
+  ; ( "trait Combinable a for a"
+    , Entity.Trait
+        ("Combinable", [ "a", Kind.Type ], Some (Variable "a"), [], []) )
   ]
 
 let test_cases =
