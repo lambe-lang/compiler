@@ -11,7 +11,8 @@ type t =
   (* Kind expression *)
   | Kind of string * Kind.t
   (* Type expression *)
-  | Type of string * tparams * with_types
+  | Type of string * tparams * Type.t
+  | Enum of string * tparams * Type.t list
   | Data of string * tparams * (string * Type.t) list
   (* Function type & expression *)
   | Sig of string * Type.t * for_type * with_types

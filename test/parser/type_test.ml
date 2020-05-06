@@ -25,13 +25,29 @@ let cases =
   ; "(~>) a b", Apply (Apply (Variable "~>", Variable "a"), Variable "b")
   ; "a -> b", Apply (Apply (Variable "->", Variable "a"), Variable "b")
   ; "a * b", Apply (Apply (Variable "*", Variable "a"), Variable "b")
-  ; "list a | b", Apply (Apply (Variable "|", Apply (Variable "list", Variable "a")), Variable "b")
-  ; "a | list b", Apply (Apply (Variable "|", Variable "a"), Apply (Variable "list", Variable "b"))
+  ; ( "list a || b"
+    , Apply
+        ( Apply (Variable "||", Apply (Variable "list", Variable "a"))
+        , Variable "b" ) )
+  ; ( "a || list b"
+    , Apply
+        ( Apply (Variable "||", Variable "a")
+        , Apply (Variable "list", Variable "b") ) )
   ; ( "((->) a) ((::) b)"
-    , Apply (Apply (Variable "->", Variable "a"), Apply (Variable "::", Variable "b")) )
+    , Apply
+        ( Apply (Variable "->", Variable "a")
+        , Apply (Variable "::", Variable "b") ) )
   ; "map a b", Apply (Apply (Variable "map", Variable "a"), Variable "b")
   ; ( "forall a b.a"
-    , Forall ("a", Lambe_ast.Kind.Type, Forall ("b", Lambe_ast.Kind.Type, Variable "a")) )
+    , Forall
+        ( "a"
+        , Lambe_ast.Kind.Type
+        , Forall ("b", Lambe_ast.Kind.Type, Variable "a") ) )
+  ; ( "forall (a:type->type) .a"
+    , Forall
+        ( "a"
+        , Lambe_ast.Kind.Arrow (Lambe_ast.Kind.Type, Lambe_ast.Kind.Type)
+        , Variable "a" ) )
   ]
 
 let test_cases =
@@ -39,5 +55,6 @@ let test_cases =
   ( "Type Parser"
   , List.map
       (fun (input, expected) ->
-        test_case ("Should parse " ^ input) `Quick (fun () -> should_parse input expected))
+        test_case ("Should parse " ^ input) `Quick (fun () ->
+            should_parse input expected))
       cases )

@@ -30,12 +30,17 @@ let cases =
   ; "a (b c)", Apply (Variable "a", Apply (Variable "b", Variable "c"))
   ; "let a = 23 in 'c'", Let ("a", Native (Float 23.), Native (Char 'c'))
   ; ( "let a b = b in a 23"
-    , Let ("a", Abstraction ("b", Variable "b"), Apply (Variable "a", Native (Float 23.))) )
+    , Let
+        ( "a"
+        , Abstraction ("b", Variable "b")
+        , Apply (Variable "a", Native (Float 23.)) ) )
   ; "a.m", Apply (Variable "a", Variable "m")
   ; "a.(::)", Apply (Variable "a", Variable "::")
   ; "a ::", Apply (Variable "a", Variable "::")
+  ; "a = b", Apply (Apply (Variable "a", Variable "="), Variable "b")
   ; ( "when a { is (::) -> a }"
-    , When (None, Variable "a", [ Lambe.Ast.Type.Variable "::", Variable "a" ]) )
+    , When (None, Variable "a", [ Lambe.Ast.Type.Variable "::", Variable "a" ])
+    )
   ; ( "when a { is (::) -> f true is Nil -> f false }"
     , When
         ( None
@@ -51,5 +56,6 @@ let test_cases =
   ( "Term Parser"
   , List.map
       (fun (input, expected) ->
-        test_case ("Should parse " ^ input) `Quick (fun () -> should_parse input expected))
+        test_case ("Should parse " ^ input) `Quick (fun () ->
+            should_parse input expected))
       cases )

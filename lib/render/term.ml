@@ -17,5 +17,6 @@ and pp ppf = function
   | Apply (t1, t2) -> Format.fprintf ppf "(%a) %a" pp t1 pp t2
   | Let (n, t1, t2) -> Format.fprintf ppf "let %s = %a in %a" n pp t1 pp t2
   | When (None, e, c) -> Format.fprintf ppf "when %a { %a }" pp e pp_case c
-  | When (Some n, e, c) -> Format.fprintf ppf "when let %s = %a { %a }" n pp e pp_case c
+  | When (Some n, e, c) ->
+    Format.fprintf ppf "when let %s = %a { %a }" n pp e pp_case c
   | LetImpl _ -> Format.fprintf ppf "TBD"

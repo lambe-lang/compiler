@@ -4,4 +4,7 @@ type unification_error =
 
 type substitutions = (string * Lambe_ast.Type.t) list
 
-val unify : Lambe_ast.Type.t -> Lambe_ast.Type.t -> (substitutions, unification_error) result
+val unify :
+     Lambe_ast.Type.t
+  -> Lambe_ast.Type.t
+  -> (substitutions, unification_error) result
