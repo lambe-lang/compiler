@@ -17,3 +17,5 @@ type t =
   (* Function type & expression *)
   | Sig of string * Type.t * for_type * with_types
   | Def of string * Term.t
+  (* Located entity *)
+  | Located of t * Location.t

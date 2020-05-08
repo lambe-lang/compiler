@@ -1,18 +1,3 @@
-module Lexeme : sig
-  type t =
-    | Integer of int
-    | Float of float
-    | String of string
-    | Char of char
-    | Ident of string
-    | Operator of string
-    | Keyword of string
-
-  val pp : Format.formatter -> t -> unit
-
-  val to_string : t -> string
-end
-
 module Make (Parser : Transept_specs.PARSER with type e = char) : sig
   val tokenizer_with_spaces : string list -> Lexeme.t Parser.t
 end

@@ -5,7 +5,7 @@ module Make (CharParser : module type of Transept.Extension.Parser.For_char_list
     Transept.Core.Parser.Make_via_stream
       (CharStream)
       (struct
-        type t = Lexer.Lexeme.t
+        type t = Lambe_lexer.Lexeme.t
       end)
 
   module Kind = Kind.Make_via_parser (Parser)
@@ -15,7 +15,7 @@ module Make (CharParser : module type of Transept.Extension.Parser.For_char_list
 
   let stream s =
     let keywords = Kind.keywords @ Type.keywords @ Term.keywords @ Entity.keywords in
-    let module Lexer = Lexer.Make (CharParser) in
+    let module Lexer = Lambe_lexer.Lexer.Make (CharParser) in
     let tokenizer = Lexer.tokenizer_with_spaces keywords in
     CharStream.build tokenizer (CharParser.Stream.build @@ Transept.Utils.chars_of_string s)
 

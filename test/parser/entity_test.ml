@@ -1,7 +1,5 @@
 let lambe_entity = Alcotest.testable Lambe.Render.Entity.pp ( = )
 
-let transept_lexeme = Alcotest.testable Lambe.Syntax.Lexer.Lexeme.pp ( = )
-
 let should_parse input expected =
   let module CharParser = Transept.Extension.Parser.For_char_list in
   let open Lambe.Syntax.Parser.Make (CharParser) in

@@ -1,25 +1,3 @@
-module Lexeme = struct
-  type t =
-    | Integer of int
-    | Float of float
-    | String of string
-    | Char of char
-    | Ident of string
-    | Operator of string
-    | Keyword of string
-
-  let pp ppf = function
-    | Integer value -> Format.fprintf ppf "%i" value
-    | Float value -> Format.fprintf ppf "%f" value
-    | String value -> Format.fprintf ppf "\"%s\"" value
-    | Char value -> Format.fprintf ppf "'%c'" value
-    | Ident value -> Format.fprintf ppf "%s" value
-    | Operator value -> Format.fprintf ppf "%s" value
-    | Keyword value -> Format.fprintf ppf "%s" value
-
-  let to_string = Format.asprintf "%a" pp
-end
-
 module Make (Parser : Transept_specs.PARSER with type e = char) = struct
   open Transept_utils.Utils
   open Lexeme

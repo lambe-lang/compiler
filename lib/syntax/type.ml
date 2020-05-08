@@ -1,12 +1,12 @@
 module Make_via_parser
-    (Parser : Transept.Specs.PARSER with type e = Lexer.Lexeme.t)
+    (Parser : Transept.Specs.PARSER with type e = Lambe_lexer.Lexeme.t)
     (Kind : Entry.API with type t = Lambe_ast.Kind.t and type 'a p = 'a Parser.t) =
 struct
   type t = Lambe_ast.Type.t
 
   type 'a p = 'a Parser.t
 
-  open Lexer.Token (Parser)
+  open Lambe_lexer.Lexer.Token (Parser)
 
   open Parser
   open Lambe_ast.Type
