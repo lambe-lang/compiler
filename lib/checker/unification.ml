@@ -20,8 +20,6 @@ let unify t1 t2 =
       if List.mem n @@ free_vars t then Error (CyclicUnification (t1, t2)) else Ok ((n, t) :: s)
     | Forall (n1, k1, t1), Forall (n2, k2, t2) when k1 = k2 ->
       unify t1 (substitute [ n1, Variable n2 ] t2) ((n1, Variable n2) :: s)
-    | Located (t1, _), _ -> unify t1 t2 s
-    | _, Located (t2, _) -> unify t1 t2 s
     | _ -> Error (CannotUnify (t1, t2))
   in
   unify t1 t2 []

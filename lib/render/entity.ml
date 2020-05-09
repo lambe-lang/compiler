@@ -34,7 +34,6 @@ let rec pp ppf = function
   | Impl (p, t, f, w, d) ->
     Format.fprintf ppf "impl forall %a. %a%a%a { %a } " pp_params p Type.pp t pp_for f pp_with w
       pp_entities d
-  | Located (t, _) -> pp ppf t
 
 and pp_entities ppf = function
   | [] -> ()

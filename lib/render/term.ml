@@ -19,4 +19,3 @@ and pp ppf = function
   | Apply (t1, t2) -> Format.fprintf ppf "(%a) %a" pp t1 pp t2
   | Let (n, t1, t2) -> Format.fprintf ppf "let %s = %a in %a" n pp t1 pp t2
   | When (n, e, c) -> Format.fprintf ppf "when %a%a { %a }" pp_when_let n pp e pp_case c
-  | Located (t, _) -> pp ppf t

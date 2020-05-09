@@ -15,5 +15,3 @@ type t =
   | Let of string * t * t
   (* Smart cast *)
   | When of string option * t * (Type.t * t) list
-  (* Located term *)
-  | Located of t * Location.t
