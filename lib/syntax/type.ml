@@ -17,7 +17,8 @@ struct
 
   let self_type = kwd "self" <$> (fun i -> Variable i)
 
-  let ident_type = ident <$> (fun i -> Variable i)
+  let ident_type =
+    ident <&> optrep (kwd "." &> ident) <$> (function i, [] -> Variable i | i, l -> Path (i :: l))
 
   let type_param =
     kwd "("

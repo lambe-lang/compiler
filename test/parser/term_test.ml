@@ -33,9 +33,9 @@ let cases =
   ; "a.(::)", Apply (Variable "a", Variable "::")
   ; "a ::", Apply (Variable "a", Variable "::")
   ; "a = b", Apply (Apply (Variable "a", Variable "="), Variable "b")
-  ; ( "when a { is (::) -> a }"
+  ; ( "when a is (::) -> a "
     , When (None, Variable "a", [ Lambe.Ast.Type.Variable "::", Variable "a" ]) )
-  ; ( "when a { is (::) -> f true is Nil -> f false }"
+  ; ( "when a is (::) -> f true is Nil -> f false "
     , When
         ( None
         , Variable "a"

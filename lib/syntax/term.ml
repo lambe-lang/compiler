@@ -25,6 +25,7 @@ struct
     ident
     <|> kwd "_"
     <|> kwd "="
+    <|> kwd "self"
     <|> operator
     <$> (fun f -> Variable f)
     <|> (do_try (kwd "(" <&> kwd ")") <$> (fun _ -> Variable "()"))
@@ -59,9 +60,7 @@ struct
     kwd "when"
     &> opt (kwd "let" &> ident <& kwd "=")
     <&> do_lazy apply_term
-    <& kwd "{"
     <&> rep (do_lazy case_term)
-    <& kwd "}"
     <$> (function (n, t), c -> When (n, t, c))
 
   and case_term () = kwd "is" &> name_type <& kwd "->" <&> do_lazy apply_term
@@ -76,6 +75,8 @@ struct
     <|> do_lazy function_term
     <|> do_lazy block_term
     <|> do_lazy when_term
+    <&> optrep (kwd "with" &> ident <& kwd "=" <&> do_lazy apply_term)
+    <$> (function t, [] -> t | t, l -> With (t, l))
 
   and invoque_term () =
     do_lazy simple_term

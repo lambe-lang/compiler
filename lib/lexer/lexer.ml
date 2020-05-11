@@ -11,6 +11,10 @@ module Make (Parser : Transept_specs.PARSER with type e = char) = struct
 
   let operator = Parser.(to_list (in_list first <&> optrep (in_list next)) <$> string_of_chars)
 
+  let ident =
+    let open Parser in
+    to_list (alpha <&> optrep (alpha <|> digit <|> in_list [ '_'; '?'; '$' ])) <$> string_of_chars
+
   let tokenizer s l =
     let open Parser in
     let keywords =

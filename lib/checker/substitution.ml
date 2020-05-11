@@ -2,6 +2,7 @@ open Lambe_ast.Type
 
 let substitute =
   let rec substitute n v = function
+    | Path p -> Path p
     | Variable m -> if n = m then v else Variable m
     | Apply (t1, t2) -> Apply (substitute n v t1, substitute n v t2)
     | Forall (m, k, t2) ->

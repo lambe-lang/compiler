@@ -1,0 +1,7 @@
+trait SemiGroup a {
+    sig compose : self -> self -> self for a
+}
+
+trait Monoid a with SemiGroup a {
+    sig neutral : a
+}

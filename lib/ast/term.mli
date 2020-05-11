@@ -15,3 +15,4 @@ type t =
   | Let of string * t * t
   (* Smart cast *)
   | When of string option * t * (Type.t * t) list
+  | With of t * (string * t) list

@@ -26,6 +26,8 @@ struct
     ; "impl"
     ; "("
     ; ")"
+    ; "{"
+    ; "}"
     ; "="
     ; ":"
     ; ";"
@@ -37,6 +39,8 @@ struct
     ]
 
   let kind_name = ident <|> (kwd "(" &> (operator <|> kwd "->") <& kwd ")")
+
+  let operator = operator <|> (do_try (kwd "(" &> kwd ")") <$> (fun _ -> "()"))
 
   let sig_name = ident <|> (kwd "(" &> (operator <|> kwd "=") <& kwd ")")
 

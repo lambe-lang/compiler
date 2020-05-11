@@ -27,6 +27,7 @@ let cases =
     , Entity.Sig
         ("::", Type.Variable "a", Some (Type.Variable "a"), [ Type.Variable "a"; Type.Variable "b" ])
     )
+  ; "sig (()) : unit", Entity.Sig ("()", Type.Variable "unit", None, [])
   ; ( "sig (++) : forall a. self -> self for int"
     , Entity.Sig
         ( "++"
@@ -52,6 +53,7 @@ let cases =
         , let open Term in
           Abstraction
             ("a", Abstraction ("b", Apply (Apply (Variable "a", Variable "+"), Variable "b"))) ) )
+  ; "def (()) = unit", Entity.Def ("()", Term.Variable "unit")
   ; "data Zero", Entity.Data ("Zero", [], [])
   ; "data Succ { p : Peano } ", Entity.Data ("Succ", [], [ "p", Type.Variable "Peano" ])
   ; ( "data List a { h : a; t : List a } "

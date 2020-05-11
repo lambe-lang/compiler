@@ -1,0 +1,17 @@
+data True
+data False
+type Bool = True | False
+
+impl Bool {
+    sig (||) : self -> self
+    def (||) b = self fold id { b }
+
+    sig (&&) : self -> self
+    def (&&) b = self fold { b } id
+
+    sig fold : forall b. self -> (True -> b) -> (False -> b) -> b
+    def fold t f =
+        when self
+        is True -> t self
+        is False -> f self
+}
