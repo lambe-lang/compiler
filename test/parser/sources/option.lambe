@@ -1,6 +1,6 @@
 impl control
 
-data None
+dat a None
 data Some a { value : a }
 
 type Option a = None | Some a

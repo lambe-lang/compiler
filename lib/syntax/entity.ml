@@ -60,7 +60,8 @@ struct
     kwd "data"
     &> sig_name
     <&> optrep type_param
-    <&> (opt (kwd "{" &> data_attributes <& kwd "}") <$> (function None -> [] | Some l -> l))
+    <&> ( opt (kwd "{" &> data_attributes <& kwd "}")
+        <$> (function None -> [] | Some l -> l) )
     <$> (function (n, p), t -> Data (n, p, t))
 
   let type_entity =
@@ -69,10 +70,15 @@ struct
     <&> optrep type_param
     <& kwd "="
     <&> to_list (Type.main <&> optrep (kwd "|" &> Type.main))
-    <$> (function (n, p), [ t ] -> Type (n, p, t) | (n, p), l -> Enum (n, p, l))
+    <$> function
+    | (n, p), [ t ] -> Type (n, p, t) | (n, p), l -> Enum (n, p, l)
 
   let kind_entity =
-    kwd "kind" &> kind_name <& kwd "=" <&> Kind.main <$> (function n, t -> Kind (n, t))
+    kwd "kind"
+    &> kind_name
+    <& kwd "="
+    <&> Kind.main
+    <$> (function n, t -> Kind (n, t))
 
   let for_directive = opt (kwd "for" &> Type.main)
 
@@ -94,7 +100,8 @@ struct
     <& kwd "="
     <&> Term.main
     <$> function
-    | (n, l), t -> Def (n, List.fold_right (fun e a -> Lambe_ast.Term.Abstraction (e, a)) l t)
+    | (n, l), t ->
+      Def (n, List.fold_right (fun e a -> Lambe_ast.Term.Abstraction (e, a)) l t)
 
   let rec trait_entity () =
     kwd "trait"
@@ -108,7 +115,8 @@ struct
 
   and impl_entity () =
     kwd "impl"
-    &> (opt (kwd "forall" &> optrep type_param <& kwd ".") <$> (function None -> [] | Some l -> l))
+    &> ( opt (kwd "forall" &> optrep type_param <& kwd ".")
+       <$> (function None -> [] | Some l -> l) )
     <&> Type.main
     <&> for_directive
     <&> with_directive

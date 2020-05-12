@@ -10,7 +10,9 @@ let rec pp_case ppf = function
   | [] -> ()
   | (t, e) :: l -> Format.fprintf ppf " is %a -> %a %a" Type.pp t pp e pp_case l
 
-and pp_when_let ppf = function None -> () | Some n -> Format.fprintf ppf "let %s =" n
+and pp_when_let ppf = function
+  | None -> ()
+  | Some n -> Format.fprintf ppf "let %s =" n
 
 and pp_with ppf = function
   | [] -> ()
@@ -22,5 +24,6 @@ and pp ppf = function
   | Abstraction (n, t) -> Format.fprintf ppf "{%s -> %a}" n pp t
   | Apply (t1, t2) -> Format.fprintf ppf "(%a) %a" pp t1 pp t2
   | Let (n, t1, t2) -> Format.fprintf ppf "let %s = %a in %a" n pp t1 pp t2
-  | When (n, e, c) -> Format.fprintf ppf "when %a%a { %a }" pp_when_let n pp e pp_case c
+  | When (n, e, c) ->
+    Format.fprintf ppf "when %a%a { %a }" pp_when_let n pp e pp_case c
   | With (t, l) -> Format.fprintf ppf "%a%a" pp t pp_with l
