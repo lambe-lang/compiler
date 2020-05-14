@@ -1,9 +1,9 @@
-open Lambe.Ast.Type
-open Lambe.Checker.Unification
+open Lambe_ast.Type
+open Lambe_checker.Unification
 
-let unification_error = Alcotest.testable Lambe.Render.Unification.pp ( = )
+let unification_error = Alcotest.testable Lambe_render.Unification.pp ( = )
 
-let lambe_type = Alcotest.testable Lambe.Render.Type.pp ( = )
+let lambe_type = Alcotest.testable Lambe_render.Type.pp ( = )
 
 let unify_type =
   Alcotest.(result (list (pair string lambe_type)) unification_error)

@@ -1,8 +1,8 @@
-let lambe_type = Alcotest.testable Lambe.Render.Type.pp ( = )
+let lambe_type = Alcotest.testable Lambe_render.Type.pp ( = )
 
 let should_parse input expected =
   let module CharParser = Transept.Extension.Parser.For_char_list in
-  let open Lambe.Syntax.Parser.Make (CharParser) in
+  let open Lambe_syntax.Parser.Make (CharParser) in
   let expected = Ok expected
   and computed =
     Response.fold
@@ -13,7 +13,7 @@ let should_parse input expected =
   Alcotest.(check (result lambe_type int)) "should_parse" expected computed
 
 let cases =
-  let open Lambe.Ast.Type in
+  let open Lambe_ast.Type in
   [
     "self", Variable "self"
   ; "a", Variable "a"

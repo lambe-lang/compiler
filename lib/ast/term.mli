@@ -1,12 +1,12 @@
-type native =
+type literal =
   | Integer of int
   | Float of float
   | String of string
   | Char of char
 
 type t =
-  (* Native expressions *)
-  | Native of native
+  (* Literal expressions *)
+  | Literal of literal
   (* Lambda expression *)
   | Variable of string
   | Abstraction of string * t

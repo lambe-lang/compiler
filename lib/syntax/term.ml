@@ -19,10 +19,10 @@ struct
 
   let native_term =
     integer
-    <$> (fun f -> Native (Integer f))
-    <|> (float <$> (fun f -> Native (Float f)))
-    <|> (string <$> (fun f -> Native (String f)))
-    <|> (char <$> (fun f -> Native (Char f)))
+    <$> (fun f -> Literal (Integer f))
+    <|> (float <$> (fun f -> Literal (Float f)))
+    <|> (string <$> (fun f -> Literal (String f)))
+    <|> (char <$> (fun f -> Literal (Char f)))
 
   let ident_term =
     ident

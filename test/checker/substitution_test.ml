@@ -1,7 +1,7 @@
-open Lambe.Ast.Type
-open Lambe.Checker
+open Lambe_ast.Type
+open Lambe_checker
 
-let lambe_type = Alcotest.testable Lambe.Render.Type.pp ( = )
+let lambe_type = Alcotest.testable Lambe_render.Type.pp ( = )
 
 let should_substitute_in_variable () =
   let expected = Variable "Int"
