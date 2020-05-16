@@ -96,7 +96,7 @@ struct
   let def_entity =
     kwd "def"
     &> sig_name
-    <&> optrep ident
+    <&> optrep (ident <|> kwd "_")
     <& kwd "="
     <&> Term.main
     <$> function

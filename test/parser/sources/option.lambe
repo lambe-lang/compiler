@@ -6,7 +6,7 @@ data Some a { value : a }
 type Option a = None | Some a
 
 impl forall a. Option a {
-    sig fold : forall b. (->) self ((None -> b) -> (Some a -> b) -> b)
+    sig fold : forall b. self -> (None -> b) -> (Some a -> b) -> b
 
     def fold n s =
         when self

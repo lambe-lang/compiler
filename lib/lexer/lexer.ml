@@ -23,6 +23,7 @@ module Make (Parser : Transept_specs.PARSER with type e = char) = struct
     ; ':'
     ; '$'
     ; '@'
+    ; '!'
     ; '.'
     ]
 
