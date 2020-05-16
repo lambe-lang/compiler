@@ -46,11 +46,11 @@ struct
 
   let type_param =
     kwd "("
-    &> ident
+    &> (ident <|> kwd "_")
     <& kwd ":"
     <&> Kind.main
     <& kwd ")"
-    <|> (ident <$> (fun n -> n, Lambe_ast.Kind.Type))
+    <|> (ident <|> kwd "_" <$> (fun n -> n, Lambe_ast.Kind.Type))
 
   let data_attributes =
     let data = ident <& kwd ":" <&> Type.main in
