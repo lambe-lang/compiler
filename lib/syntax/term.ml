@@ -62,12 +62,12 @@ struct
 
   and when_term () =
     kwd "when"
-    &> opt (kwd "let" &> ident <& kwd "=")
-    <&> do_lazy apply_term
+    &> optrep (opt (kwd "let" &> ident <& kwd "=") <&> do_lazy apply_term)
     <&> rep (do_lazy case_term)
-    <$> (function (n, t), c -> When (n, t, c))
+    <$> (function n, l -> When (n, l))
 
-  and case_term () = kwd "is" &> name_type <& kwd "->" <&> do_lazy apply_term
+  and case_term () =
+    optrep (kwd "is" &> name_type) <& kwd "->" <&> do_lazy apply_term
 
   and block_term () =
     kwd "("

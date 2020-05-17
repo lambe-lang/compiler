@@ -62,7 +62,7 @@ module Make (Parser : Transept_specs.PARSER with type e = char) = struct
     <|> (char <$> (fun e -> Char e))
     <& skipped
 
-  let tokenizer_with_spaces l = tokenizer spaces l
+  let tokenizer l = tokenizer spaces l
 end
 
 module Token (Parser : Transept_specs.PARSER with type e = Lexeme.t) = struct
@@ -82,4 +82,6 @@ module Token (Parser : Transept_specs.PARSER with type e = Lexeme.t) = struct
   let operator = any >>= (function Operator i -> return i | _ -> fail)
 
   let kwd s = any >>= (fun a -> if a = Keyword s then return s else fail)
+
+  let is_kwd s = any >>= (fun a -> if a = Keyword s then return a else fail)
 end

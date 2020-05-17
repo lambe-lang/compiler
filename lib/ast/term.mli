@@ -14,5 +14,5 @@ type t =
   (* Let constructions *)
   | Let of string * t * t
   (* Smart cast *)
-  | When of string option * t * (Type.t * t) list
+  | When of (string option * t) list * (Type.t list * t) list
   | With of t * (string * t) list

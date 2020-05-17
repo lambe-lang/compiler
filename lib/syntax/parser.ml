@@ -20,7 +20,7 @@ struct
       Kind.keywords @ Type.keywords @ Term.keywords @ Entity.keywords
     in
     let module Lexer = Lambe_lexer.Lexer.Make (CharParser) in
-    let tokenizer = Lexer.tokenizer_with_spaces keywords in
+    let tokenizer = Lexer.tokenizer keywords in
     CharStream.build tokenizer
       (CharParser.Stream.build @@ Transept.Utils.chars_of_string s)
 

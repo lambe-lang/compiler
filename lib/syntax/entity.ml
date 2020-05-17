@@ -17,7 +17,8 @@ struct
 
   let keywords =
     [
-      "kind"
+      "comment"
+    ; "kind"
     ; "type"
     ; "data"
     ; "sig"
@@ -103,6 +104,11 @@ struct
     | (n, l), t ->
       Def (n, List.fold_right (fun e a -> Lambe_ast.Term.Abstraction (e, a)) l t)
 
+  (** TODO *)
+  let comment =
+    let rec content () = is_kwd "}" <|> (any &> do_lazy content) in
+    kwd "comment" &> kwd "{" &> do_lazy content <$> (fun _ -> Comment)
+
   let rec trait_entity () =
     kwd "trait"
     &> sig_name
@@ -125,7 +131,8 @@ struct
     <$> (function (((p, t), f), w), e -> Impl (p, t, f, w, e))
 
   and entity () =
-    data_entity
+    comment
+    <|> data_entity
     <|> type_entity
     <|> kind_entity
     <|> sig_entity
