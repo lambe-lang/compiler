@@ -14,7 +14,20 @@ struct
 
   let keywords =
     [
-      "self"; "("; ")"; "{"; "}"; "let"; "="; "->"; "in"; "."; "when"; "is"; "_"
+      "self"
+    ; "("
+    ; ")"
+    ; "{"
+    ; "}"
+    ; "let"
+    ; "where"
+    ; "="
+    ; "->"
+    ; "in"
+    ; "."
+    ; "when"
+    ; "is"
+    ; "_"
     ]
 
   let native_term =
@@ -94,5 +107,20 @@ struct
     <&> optrep @@ do_lazy invoque_term
     <$> (fun (e, l) -> List.fold_left (fun a t -> Apply (a, t)) e l)
 
-  let main = apply_term ()
+  let where_term =
+    kwd "where"
+    &> ident
+    <&> optrep ident
+    <& kwd "="
+    <&> do_lazy apply_term
+    <$> function
+    | (i, l), a ->
+      (fun b -> Let (i, List.fold_right (fun t a -> Abstraction (t, a)) l a, b))
+
+  let term () =
+    do_lazy apply_term
+    <&> optrep where_term
+    <$> (function t, w -> List.fold_right (fun l a -> l a) w t)
+
+  let main = term ()
 end

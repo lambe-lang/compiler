@@ -47,7 +47,7 @@ module Make (Parser : Transept_specs.PARSER with type e = char) = struct
       List.fold_left (fun p e -> p <|> atoms e) fail
       @@ List.map chars_of_string l
       <$> string_of_chars
-    and skipped = optrep s <$> constant () in
+    and skipped = optrep s in
     skipped
     &> ( operator
        <$> fun e ->

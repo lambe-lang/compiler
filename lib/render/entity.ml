@@ -32,7 +32,7 @@ let pp_ident ppf s =
   if is_alpha s then Format.fprintf ppf "%s" s else Format.fprintf ppf "(%s)" s
 
 let rec pp ppf = function
-  | Comment -> ()
+  | Comment _ -> ()
   | Kind (n, t) ->
     Format.fprintf ppf "@[<v>kind %a = %a@ @]" pp_ident n Kind.pp t
   | Sig (n, t, f, w) ->

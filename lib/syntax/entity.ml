@@ -107,7 +107,10 @@ struct
   (** TODO *)
   let comment =
     let rec content () = is_kwd "}" <|> (any &> do_lazy content) in
-    kwd "comment" &> kwd "{" &> do_lazy content <$> (fun _ -> Comment)
+    kwd "comment"
+    &> kwd "{"
+    &> do_lazy content
+    <$> (fun _ -> Comment [ Lambe_ast.Comment.Block "TODO" ])
 
   let rec trait_entity () =
     kwd "trait"
