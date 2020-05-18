@@ -14,19 +14,20 @@ struct
 
   let keywords =
     [
-      "self"
+      "is"
+    ; "let"
+    ; "self"
+    ; "when"
+    ; "where"
+    ; "with"
     ; "("
     ; ")"
     ; "{"
     ; "}"
-    ; "let"
-    ; "where"
     ; "="
     ; "->"
     ; "in"
     ; "."
-    ; "when"
-    ; "is"
     ; "_"
     ]
 
@@ -55,7 +56,7 @@ struct
   let rec let_term () =
     kwd "let"
     &> ident
-    <&> optrep ident
+    <&> optrep (ident <|> kwd "_")
     <& kwd "="
     <&> do_lazy apply_term
     <& kwd "in"
@@ -110,7 +111,7 @@ struct
   let where_term =
     kwd "where"
     &> ident
-    <&> optrep ident
+    <&> optrep (ident <|> kwd "_")
     <& kwd "="
     <&> do_lazy apply_term
     <$> function

@@ -41,17 +41,20 @@ module Make (Parser : Transept_specs.PARSER with type e = char) = struct
       <&> optrep (alpha <|> digit <|> in_list [ '_'; '?'; '$' ]) )
     <$> string_of_chars
 
-  let tokenizer s l =
+  let space = Parser.in_list [ ' '; '\t'; '\r'; '\n' ]
+
+  let tokenizer l =
     let open Parser in
     let keywords =
       List.fold_left (fun p e -> p <|> atoms e) fail
       @@ List.map chars_of_string l
       <$> string_of_chars
-    and skipped = optrep s in
-    skipped
-    &> ( operator
-       <$> fun e ->
-       if List.exists (fun k -> e = k) l then Keyword e else Operator e )
+    in
+    rep space
+    <$> (function s -> Spaces s)
+    <|> ( operator
+        <$> fun e ->
+        if List.exists (fun k -> e = k) l then Keyword e else Operator e )
     <|> ( ident
         <$> fun e ->
         if List.exists (fun k -> e = k) l then Keyword e else Ident e )
@@ -60,28 +63,30 @@ module Make (Parser : Transept_specs.PARSER with type e = char) = struct
     <|> (integer <$> (fun e -> Integer e))
     <|> (string <$> (fun e -> String e))
     <|> (char <$> (fun e -> Char e))
-    <& skipped
-
-  let tokenizer l = tokenizer spaces l
+    <|> (any <$> (fun e -> Unknown e))
 end
 
 module Token (Parser : Transept_specs.PARSER with type e = Lexeme.t) = struct
   open Parser
   open Lexeme
 
-  let integer = any >>= (function Integer f -> return f | _ -> fail)
+  let spaces = any >>= (function Spaces f -> return f | _ -> fail)
 
-  let float = any >>= (function Float f -> return f | _ -> fail)
+  let lexeme = opt spaces &> any <& opt spaces
 
-  let string = any >>= (function String s -> return s | _ -> fail)
+  let integer = lexeme >>= (function Integer f -> return f | _ -> fail)
 
-  let char = any >>= (function Char c -> return c | _ -> fail)
+  let float = lexeme >>= (function Float f -> return f | _ -> fail)
 
-  let ident = any >>= (function Ident i -> return i | _ -> fail)
+  let string = lexeme >>= (function String s -> return s | _ -> fail)
 
-  let operator = any >>= (function Operator i -> return i | _ -> fail)
+  let char = lexeme >>= (function Char c -> return c | _ -> fail)
 
-  let kwd s = any >>= (fun a -> if a = Keyword s then return s else fail)
+  let ident = lexeme >>= (function Ident i -> return i | _ -> fail)
 
-  let is_kwd s = any >>= (fun a -> if a = Keyword s then return a else fail)
+  let operator = lexeme >>= (function Operator i -> return i | _ -> fail)
+
+  let kwd s = lexeme >>= (fun a -> if a = Keyword s then return s else fail)
+
+  let is_kwd s = lexeme >>= (fun a -> if a = Keyword s then return a else fail)
 end

@@ -25,6 +25,9 @@ struct
     ; "def"
     ; "trait"
     ; "impl"
+    ; "for"
+    ; "with"
+    ; "forall"
     ; "("
     ; ")"
     ; "{"
@@ -33,9 +36,6 @@ struct
     ; ":"
     ; ";"
     ; "|"
-    ; "for"
-    ; "with"
-    ; "forall"
     ; "."
     ]
 
@@ -106,11 +106,15 @@ struct
 
   (** TODO *)
   let comment =
-    let rec content () = is_kwd "}" <|> (any &> do_lazy content) in
+    let open Lambe_lexer.Lexeme in
+    let rec content () =
+      kwd "}"
+      <|> (any <&> do_lazy content <$> (function f, s -> to_string f ^ s))
+    in
     kwd "comment"
     &> kwd "{"
     &> do_lazy content
-    <$> (fun _ -> Comment [ Lambe_ast.Comment.Block "TODO" ])
+    <$> (fun s -> Comment [ Block s ])
 
   let rec trait_entity () =
     kwd "trait"

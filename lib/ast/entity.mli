@@ -4,9 +4,11 @@ type with_types = Type.t list
 
 type for_type = Type.t option
 
+and comment = Block of string
+
 and t =
   (* Comment *)
-  | Comment of t Comment.t list
+  | Comment of comment list
   (* Trait expression *)
   | Impl of tparams * Type.t * for_type * with_types * t list
   | Trait of string * tparams * for_type * with_types * t list
