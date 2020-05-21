@@ -37,6 +37,8 @@ struct
     ; ";"
     ; "|"
     ; "."
+    ; "-{"
+    ; "--"
     ]
 
   let kind_name = ident <|> (kwd "(" &> (operator <|> kwd "->") <& kwd ")")
@@ -104,19 +106,25 @@ struct
     | (n, l), t ->
       Def (n, List.fold_right (fun e a -> Lambe_ast.Term.Abstraction (e, a)) l t)
 
-  (** TODO *)
-  let comment =
+  let rec commentBlock () =
     let open Lambe_lexer.Lexeme in
     let rec content () =
       kwd "}"
       <|> (any <&> do_lazy content <$> (function f, s -> to_string f ^ s))
     in
-    kwd "comment"
-    &> kwd "{"
-    &> do_lazy content
-    <$> (fun s -> Comment [ Block s ])
+    kwd "-{" &> do_lazy content <$> (fun s -> Comment [ Block s ])
 
-  let rec trait_entity () =
+  and commentLine () =
+    let open Lambe_lexer.Lexeme in
+    let rec content () =
+      spaces
+      <?> (function s -> List.exists (( = ) '\n') s)
+      <$> (fun _ -> "")
+      <|> (any <&> do_lazy content <$> (function f, s -> to_string f ^ s))
+    in
+    kwd "--" &> do_lazy content <$> (fun s -> Comment [ Block s ])
+
+  and trait_entity () =
     kwd "trait"
     &> sig_name
     <&> optrep type_param
@@ -138,14 +146,15 @@ struct
     <$> (function (((p, t), f), w), e -> Impl (p, t, f, w, e))
 
   and entity () =
-    comment
-    <|> data_entity
+    data_entity
     <|> type_entity
     <|> kind_entity
     <|> sig_entity
     <|> def_entity
     <|> do_lazy trait_entity
     <|> do_lazy impl_entity
+    <|> do_lazy commentLine
+    <|> do_lazy commentBlock
 
   let main = entity ()
 end

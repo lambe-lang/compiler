@@ -36,7 +36,7 @@ let rec pp_comments ppf = function
   | Block s :: l -> Format.fprintf ppf "%s%a" s pp_comments l
 
 let rec pp ppf = function
-  | Comment l -> Format.fprintf ppf "@[<v>comment { %a }@ @]" pp_comments l
+  | Comment l -> Format.fprintf ppf "@[<v>-{ %a }@ @]" pp_comments l
   | Kind (n, t) ->
     Format.fprintf ppf "@[<v>kind %a = %a@ @]" pp_ident n Kind.pp t
   | Sig (n, t, f, w) ->

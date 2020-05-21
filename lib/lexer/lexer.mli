@@ -3,6 +3,8 @@ module Make (Parser : Transept_specs.PARSER with type e = char) : sig
 end
 
 module Token (Parser : Transept_specs.PARSER with type e = Lexeme.t) : sig
+  val spaces : char list Parser.t
+
   val integer : int Parser.t
 
   val float : float Parser.t

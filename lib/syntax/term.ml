@@ -43,6 +43,7 @@ struct
     <|> kwd "_"
     <|> kwd "="
     <|> kwd "self"
+    <|> kwd "--"
     <|> operator
     <$> (fun f -> Variable f)
     <|> (do_try (kwd "(" <&> kwd ")") <$> (fun _ -> Variable "()"))
