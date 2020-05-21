@@ -2,7 +2,8 @@ module Make_via_parser
     (Parser : Transept.Specs.PARSER with type e = Lambe_lexer.Lexeme.t)
     (Kind : Entry.API with type t = Lambe_ast.Kind.t and type 'a p = 'a Parser.t)
     (Type : Entry.API with type t = Lambe_ast.Type.t and type 'a p = 'a Parser.t)
-    (Term : Entry.API with type t = Lambe_ast.Term.t and type 'a p = 'a Parser.t) =
+    (Term : Entry.API with type t = Lambe_ast.Term.t and type 'a p = 'a Parser.t)
+    (Comment : Entry.API with type t = string and type 'a p = 'a Parser.t) =
 struct
   type t = Lambe_ast.Entity.t
 
@@ -17,8 +18,7 @@ struct
 
   let keywords =
     [
-      "comment"
-    ; "kind"
+      "kind"
     ; "type"
     ; "data"
     ; "sig"
@@ -37,8 +37,6 @@ struct
     ; ";"
     ; "|"
     ; "."
-    ; "-{"
-    ; "--"
     ]
 
   let kind_name = ident <|> (kwd "(" &> (operator <|> kwd "->") <& kwd ")")
@@ -106,25 +104,9 @@ struct
     | (n, l), t ->
       Def (n, List.fold_right (fun e a -> Lambe_ast.Term.Abstraction (e, a)) l t)
 
-  let rec commentBlock () =
-    let open Lambe_lexer.Lexeme in
-    let rec content () =
-      kwd "}"
-      <|> (any <&> do_lazy content <$> (function f, s -> to_string f ^ s))
-    in
-    kwd "-{" &> do_lazy content <$> (fun s -> Comment [ Block s ])
+  let comment = Comment.main <$> fun s -> Comment s
 
-  and commentLine () =
-    let open Lambe_lexer.Lexeme in
-    let rec content () =
-      spaces
-      <?> (function s -> List.exists (( = ) '\n') s)
-      <$> (fun _ -> "")
-      <|> (any <&> do_lazy content <$> (function f, s -> to_string f ^ s))
-    in
-    kwd "--" &> do_lazy content <$> (fun s -> Comment [ Block s ])
-
-  and trait_entity () =
+  let rec trait_entity () =
     kwd "trait"
     &> sig_name
     <&> optrep type_param
@@ -151,10 +133,9 @@ struct
     <|> kind_entity
     <|> sig_entity
     <|> def_entity
+    <|> comment
     <|> do_lazy trait_entity
     <|> do_lazy impl_entity
-    <|> do_lazy commentLine
-    <|> do_lazy commentBlock
 
   let main = entity ()
 end

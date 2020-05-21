@@ -31,12 +31,8 @@ let pp_ident ppf s =
 
   if is_alpha s then Format.fprintf ppf "%s" s else Format.fprintf ppf "(%s)" s
 
-let rec pp_comments ppf = function
-  | [] -> ()
-  | Block s :: l -> Format.fprintf ppf "%s%a" s pp_comments l
-
 let rec pp ppf = function
-  | Comment l -> Format.fprintf ppf "@[<v>-{ %a }@ @]" pp_comments l
+  | Comment s -> Format.fprintf ppf "@[<v>-{ %s }@ @]" s
   | Kind (n, t) ->
     Format.fprintf ppf "@[<v>kind %a = %a@ @]" pp_ident n Kind.pp t
   | Sig (n, t, f, w) ->
