@@ -11,11 +11,7 @@ struct
 
   (* open Lambe_ast.Entities *)
 
-  let keywords =
-    [
-      "-{"
-    ; "--"
-    ]
+  let keywords = [ "-{"; "--" ]
 
   let commentBlock =
     let open Lambe_lexer.Lexeme in
@@ -36,9 +32,7 @@ struct
     in
     kwd "--" &> do_lazy content
 
-  let comment =
-    commentLine
-    <|> commentBlock
+  let comment = commentLine <|> commentBlock
 
   let main = comment
 end

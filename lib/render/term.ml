@@ -22,7 +22,7 @@ and pp_when_let ppf = function
 and pp_when_lets ppf = function
   | [] -> ()
   | (w, e) :: l ->
-    Format.fprintf ppf " when %a%a%a" pp_when_let w pp e pp_when_lets l
+    Format.fprintf ppf " when %a(%a)%a" pp_when_let w pp e pp_when_lets l
 
 and pp_with ppf = function
   | [] -> ()

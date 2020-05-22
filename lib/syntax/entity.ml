@@ -43,7 +43,7 @@ struct
 
   let operator = operator <|> (do_try (kwd "(" &> kwd ")") <$> (fun _ -> "()"))
 
-  let sig_name = ident <|> (kwd "(" &> (operator <|> kwd "=") <& kwd ")")
+  let sig_name = ident <|> (kwd "(" &> (operator <|> kwd "=" <|> kwd "--") <& kwd ")")
 
   let type_param =
     kwd "("
@@ -104,7 +104,7 @@ struct
     | (n, l), t ->
       Def (n, List.fold_right (fun e a -> Lambe_ast.Term.Abstraction (e, a)) l t)
 
-  let comment = Comment.main <$> fun s -> Comment s
+  let comment = Comment.main <$> (fun s -> Comment s)
 
   let rec trait_entity () =
     kwd "trait"

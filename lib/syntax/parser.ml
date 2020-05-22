@@ -18,7 +18,11 @@ struct
 
   let stream s =
     let keywords =
-      Kind.keywords @ Type.keywords @ Term.keywords @ Entity.keywords @ Comment.keywords
+      Kind.keywords
+      @ Type.keywords
+      @ Term.keywords
+      @ Entity.keywords
+      @ Comment.keywords
     in
     let module Lexer = Lambe_lexer.Lexer.Make (CharParser) in
     let tokenizer = Lexer.tokenizer keywords in

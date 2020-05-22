@@ -11,7 +11,7 @@ struct
   open Parser
   open Lambe_ast.Type
 
-  let keywords = [ "forall"; "self"; "("; ")"; ":"; "." ]
+  let keywords = [ "forall"; "self"; "("; ")"; ":"; "."; "{"; "}" ]
 
   let operator = operator <|> kwd "->"
 
