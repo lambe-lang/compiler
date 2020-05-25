@@ -4,7 +4,7 @@ let should_parse input =
   let expected = Ok ()
   and computed =
     Response.fold
-      (parse (optrep Entity.main <& eos) @@ stream input)
+      (parse (Entity.main <& eos) @@ stream input)
       (fun _ -> Ok ())
       (fun (s, _) -> Error (Stream.position s))
   in

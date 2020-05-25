@@ -31,7 +31,7 @@ let pp_ident ppf s =
 
   if is_alpha s then Format.fprintf ppf "%s" s else Format.fprintf ppf "(%s)" s
 
-let rec pp ppf = function
+let rec pp_entity ppf = function
   | Comment s -> Format.fprintf ppf "@[<v>-{ %s }@ @]" s
   | Kind (n, t) ->
     Format.fprintf ppf "@[<v>kind %a = %a@ @]" pp_ident n Kind.pp t
@@ -51,15 +51,15 @@ let rec pp ppf = function
       l
   | Trait (n, p, f, w, d) ->
     Format.fprintf ppf "@[<v>trait @[<v>%a%a%a%a {@ %a@]@ }@]" pp_ident n
-      pp_params p pp_for f pp_with w pp_entities d
+      pp_params p pp_for f pp_with w pp d
   | Impl ([], t, f, w, d) ->
     Format.fprintf ppf "@[<v>impl @[<v>%a%a%a {@ %a@]@ }@]" Type.pp t pp_for f
-      pp_with w pp_entities d
+      pp_with w pp d
   | Impl (p, t, f, w, d) ->
     Format.fprintf ppf "@[<v>impl @[<v>forall%a. %a%a%a {@ %a@]@ }@]" pp_params
-      p Type.pp t pp_for f pp_with w pp_entities d
+      p Type.pp t pp_for f pp_with w pp d
 
-and pp_entities ppf = function
+and pp ppf = function
   | [] -> ()
-  | [ e ] -> Format.fprintf ppf "%a" pp e
-  | e :: l -> Format.fprintf ppf "%a@ %a" pp e pp_entities l
+  | [ e ] -> Format.fprintf ppf "%a" pp_entity e
+  | e :: l -> Format.fprintf ppf "%a@ %a" pp_entity e pp l

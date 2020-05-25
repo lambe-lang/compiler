@@ -5,7 +5,7 @@ module Make_via_parser
     (Term : Entry.API with type t = Lambe_ast.Term.t and type 'a p = 'a Parser.t)
     (Comment : Entry.API with type t = string and type 'a p = 'a Parser.t) =
 struct
-  type t = Lambe_ast.Entity.t
+  type t = Lambe_ast.Entity.t list
 
   type 'a p = 'a Parser.t
 
@@ -43,7 +43,8 @@ struct
 
   let operator = operator <|> (do_try (kwd "(" &> kwd ")") <$> (fun _ -> "()"))
 
-  let sig_name = ident <|> (kwd "(" &> (operator <|> kwd "=" <|> kwd "--") <& kwd ")")
+  let sig_name =
+    ident <|> (kwd "(" &> (operator <|> kwd "=" <|> kwd "--") <& kwd ")")
 
   let type_param =
     kwd "("
@@ -123,7 +124,7 @@ struct
     <&> Type.main
     <&> for_directive
     <&> with_directive
-    <&> ( opt (kwd "{" &> optrep (do_lazy entity) <& kwd "}")
+    <&> ( opt (kwd "{" &> do_lazy entities <& kwd "}")
         <$> (function None -> [] | Some l -> l) )
     <$> (function (((p, t), f), w), e -> Impl (p, t, f, w, e))
 
@@ -137,5 +138,11 @@ struct
     <|> do_lazy trait_entity
     <|> do_lazy impl_entity
 
-  let main = entity ()
+  and entities () =
+    do_lazy entity
+    <&> do_lazy entities
+    <$> (function e, l -> e :: l)
+    <|> return []
+
+  let main = entities ()
 end

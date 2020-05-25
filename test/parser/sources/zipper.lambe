@@ -22,7 +22,7 @@ impl forall a. zipper a for Zipper a {
 
     def left =
         let pair =
-            when let l = (self left)
+            when let l = self left
             is Nil  -> List[self.default] , (self.default :: self.right)
             is Cons -> l.tail , $ l.head :: self.right
          in self with left = pair.fst
@@ -41,7 +41,7 @@ impl forall a. zipper a for Zipper a {
     def replace f =
         self with left = value
         where value =
-            when let l = (self left)
+            when let l = self left
             is Nil  -> List[ (f self.default) ]
             is Cons -> f l.head :: $ l :: tail
 }

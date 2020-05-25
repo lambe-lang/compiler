@@ -20,7 +20,7 @@ let parse content =
   let module CharParser = Transept.Extension.Parser.For_char_list in
   let open Syntax.Parser.Make (CharParser) in
   Response.fold
-    (parse (optrep Entity.main <& eos) @@ stream content)
+    (parse (Entity.main <& eos) @@ stream content)
     (fun (_, a, _) -> Ok a)
     (fun (s, _) -> Error (Stream.position s))
 
@@ -29,5 +29,5 @@ let () =
   let content = read_fully filenme in
   let response = parse content in
   match response with
-  | Ok a -> Render.Entity.pp_entities Format.std_formatter a
+  | Ok a -> Render.Entity.pp Format.std_formatter a
   | Error s -> print_string ("Error at char " ^ string_of_int s ^ "\n")
