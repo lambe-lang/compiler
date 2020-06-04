@@ -15,7 +15,7 @@ and pp_when_let ppf = function
   | Some n -> Format.fprintf ppf "let %s = " n
 
 and pp_when ppf = function
-  | w, e -> Format.fprintf ppf " when %a%a" pp_when_let w pp e
+  | w, e -> Format.fprintf ppf "when %a%a" pp_when_let w pp e
 
 and pp_with ppf = function
   | [] -> ()
@@ -25,7 +25,7 @@ and pp ppf = function
   | Literal n -> Format.fprintf ppf "%a" pp_native n
   | Variable s -> Format.fprintf ppf "%s" s
   | Abstraction (n1, Abstraction (n2, t)) ->
-    Format.fprintf ppf "{@[<v>%s %s ->@ %a@]@ }" n1 n2 pp t
+    Format.fprintf ppf "{@[<v> %s %s ->@ %a@]@ }" n1 n2 pp t
   | Abstraction (n, t) -> Format.fprintf ppf "{ @[<v>%s ->@ %a@]@ }" n pp t
   | Apply (t1, (Apply (_, _) as t2)) -> Format.fprintf ppf "%a (%a)" pp t1 pp t2
   | Apply (t1, t2) -> Format.fprintf ppf "%a %a" pp t1 pp t2

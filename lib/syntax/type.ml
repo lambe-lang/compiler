@@ -49,8 +49,8 @@ struct
     | k1, None -> k1 | k1, Some (op, k2) -> Apply (Apply (Variable op, k1), k2)
 
   and forall_type () =
-    opt (kwd "forall" &> rep type_param <& kwd ".")
-    <$> (function None -> [] | Some l -> l)
+    optrep (kwd "forall" &> rep type_param <& kwd ".")
+    <$> (function l -> List.fold_left (fun a l -> a @ l) [] l)
     <&> do_lazy complex_type
     <$> function
     | l, t -> List.fold_right (fun (n, k) a -> Forall (n, k, a)) l t
