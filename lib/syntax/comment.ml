@@ -9,8 +9,6 @@ struct
 
   open Parser
 
-  (* open Lambe_ast.Entities *)
-
   let keywords = [ "-{"; "--" ]
 
   let commentBlock =
@@ -18,9 +16,9 @@ struct
     let rec content d () =
       kwd "{"
       &> do_lazy (content (d + 1))
-      <$> (function s -> "{" ^ s)
+      <$> ( ^ ) "{"
       <|> (kwd "}" <?> (fun _ -> d = 0) <$> (fun _ -> ""))
-      <|> (kwd "}" &> do_lazy (content (d - 1)) <$> (function s -> "}" ^ s))
+      <|> (kwd "}" &> do_lazy (content (d - 1)) <$> ( ^ ) "}")
       <|> (any <&> do_lazy (content d) <$> (function f, s -> to_string f ^ s))
     in
     kwd "-{" &> do_lazy (content 0)
