@@ -33,8 +33,7 @@ let pp_ident ppf s =
 
 let rec pp_entity ppf = function
   | Comment s -> Format.fprintf ppf "@[-{ %s }@]" s
-  | Kind (n, t) ->
-    Format.fprintf ppf "@[kind %a = %a@ @]" pp_ident n Kind.pp t
+  | Kind (n, t) -> Format.fprintf ppf "@[kind %a = %a@ @]" pp_ident n Kind.pp t
   | Sig (n, t, f, w) ->
     Format.fprintf ppf "@[<v>sig %a : %a%a%a@]" pp_ident n Type.pp t pp_for f
       pp_with w
@@ -44,14 +43,12 @@ let rec pp_entity ppf = function
     Format.fprintf ppf "@[data @[%a%a {%a@]}@]" pp_ident n pp_params p
       pp_data_attributes l
   | Type (n, p, t) ->
-    Format.fprintf ppf "@[type %a%a = %a@]" pp_ident n pp_params p Type.pp
-      t
+    Format.fprintf ppf "@[type %a%a = %a@]" pp_ident n pp_params p Type.pp t
   | Enum (n, p, l) ->
-    Format.fprintf ppf "@[type %a%a = %a@]" pp_ident n pp_params p pp_enum
-      l
+    Format.fprintf ppf "@[type %a%a = %a@]" pp_ident n pp_params p pp_enum l
   | Trait (n, p, f, w, d) ->
-    Format.fprintf ppf "@[trait @[%a%a%a%a {@ %a@]@ }@]" pp_ident n
-      pp_params p pp_for f pp_with w pp d
+    Format.fprintf ppf "@[trait @[%a%a%a%a {@ %a@]@ }@]" pp_ident n pp_params p
+      pp_for f pp_with w pp d
   | Impl ([], t, f, w, d) ->
     Format.fprintf ppf "@[<v>impl @[<v>%a%a%a {@ %a@]@ }@]" Type.pp t pp_for f
       pp_with w pp d

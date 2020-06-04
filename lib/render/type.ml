@@ -18,6 +18,6 @@ let rec pp ppf = function
     Format.fprintf ppf "(%a) %s %a" pp l s pp r
   | Apply (Apply (Variable s, l), r) when is_alpha s == false ->
     Format.fprintf ppf "%a %s %a" pp l s pp r
-  | Apply (l, (Apply (_,_) as r)) -> Format.fprintf ppf "%a (%a)" pp l pp r
+  | Apply (l, (Apply (_, _) as r)) -> Format.fprintf ppf "%a (%a)" pp l pp r
   | Apply (l, r) -> Format.fprintf ppf "%a %a" pp l pp r
   | Forall (n, k, t) -> Format.fprintf ppf "forall (%s:%a).%a" n Kind.pp k pp t
