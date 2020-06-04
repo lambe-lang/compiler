@@ -10,7 +10,7 @@ let should_parse input =
   in
   Alcotest.(check (result unit int)) "should_parse" expected computed
 
-let cases = [ "algebraic"; "bool"; "control"; "option"; "product"; "zipper" ]
+let cases = [ "algebraic"; "bool"; "control"; "option"; "product"; "zipper"; "recursive" ]
 
 let test_cases =
   let open Alcotest in

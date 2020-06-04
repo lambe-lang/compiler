@@ -1,0 +1,69 @@
+-{
+    Recursive schema definition and fold implementation
+}
+
+data Fix (f:type->type) { unfix: f (Fix f) }
+
+impl forall (f:type->type). Fix f with Functor f {
+    sig fold : forall a. self -> (f a -> a) -> a
+    def fold interpret = interpret $ { _ fold interpret } map self.unfix
+}
+
+-- Simple logical expression
+
+data Bool { value : Bool }
+data Or  a { left : a; right : a }
+data And a { left : a; right : a }
+
+type Exp a = Bool | Or a | And a
+
+-- Associated functor | Can generate a free monad right now
+
+impl Functor Exp {
+    def map e =
+        when e
+        is Bool -> e
+        is Or -> Or (self e.left) (self e.right)
+        is And -> And (self e.left) (self e.right)
+}
+
+-- Evaluations
+
+impl Exp string {
+    sig pretty : self -> string
+    def pretty e =
+        when e
+            is Bool -> e.value to_string
+            is Or -> "(%1 || %2)" e.left e.right
+            is And -> "(%1 && %2)" e.left e.right
+}
+
+impl Exp bool {
+    sig eval : self -> Bool
+    def eval e =
+        when e
+            is Bool -> e.value
+            is Or -> e.left || e.right
+            is And -> e.left && e.right
+}
+
+-- Smart constructors
+
+impl Fix Exp {
+    sig bool : Bool -> self
+    def bool b = Fix (Bool b)
+
+    sig (||) : self -> self -> self
+    def (||) r = Fix (Or self r)
+
+    sig (&&) : self -> self -> self
+    def (&&) r = Fix (And self r)
+}
+
+-- Use case
+
+-{
+    The expression `(bool true) && (bool false) fold { _ pretty }`
+    returns a string representation and the expression
+    `(bool true) && (bool false) fold { _ eval }` returns a boolean
+}

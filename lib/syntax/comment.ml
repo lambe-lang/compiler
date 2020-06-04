@@ -15,12 +15,15 @@ struct
 
   let commentBlock =
     let open Lambe_lexer.Lexeme in
-    let rec content () =
-      kwd "}"
-      <$> (fun _ -> "")
-      <|> (any <&> do_lazy content <$> (function f, s -> to_string f ^ s))
+    let rec content d () =
+      kwd "{"
+      &> do_lazy (content (d + 1))
+      <$> (function s -> "{" ^ s)
+      <|> (kwd "}" <?> (fun _ -> d = 0) <$> (fun _ -> ""))
+      <|> (kwd "}" &> do_lazy (content (d - 1)) <$> (function s -> "}" ^ s))
+      <|> (any <&> do_lazy (content d) <$> (function f, s -> to_string f ^ s))
     in
-    kwd "-{" &> do_lazy content
+    kwd "-{" &> do_lazy (content 0)
 
   let commentLine =
     let open Lambe_lexer.Lexeme in

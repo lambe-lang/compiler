@@ -1,17 +1,54 @@
+-{
+  This boolean trait provides:
+  - foldable Bool
+  - operation
+}
+
 data True
 data False
 type Bool = True | False
 
-impl Bool {
-    sig (||) : self -> self
-    def (||) b = self fold id { b }
+-- section foldable
 
-    sig (&&) : self -> self
-    def (&&) b = self fold { b } id
-
+trait foldable s for s {
     sig fold : forall b. self -> (True -> b) -> (False -> b) -> b
-    def fold t f =
-        when self
-        is True -> t self
-        is False -> f self
+}
+
+impl foldable True {
+    def fold t _ = t self
+}
+
+impl foldable False {
+    def fold _ f = f self
+}
+
+impl foldable Bool
+    with foldable True
+    with foldable False
+
+-- The operation trait defines basic capabilities for deferred boolean
+
+type bool = forall a. a -> Bool
+
+sig true : bool
+def true = { True }
+
+sig false : bool
+def false = { False }
+
+trait operation for bool with foldable Bool {
+    sig (||) : self -> self -> self
+    def (||) b = { self () fold true b }
+
+    sig (&&) : self -> self -> self
+    def (&&) b = { self () fold b false }
+
+    sig not : self -> self
+    def not = { self () fold false true }
+
+    sig (=>) : self -> self -> self
+    def (=>) b = self not || b
+
+    sig eval : self -> Bool
+    def eval = self ()
 }
