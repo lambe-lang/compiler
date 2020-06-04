@@ -68,7 +68,7 @@ struct
 
   and function_term () =
     kwd "{"
-    &> opt (do_try (rep ident <& kwd "->"))
+    &> opt (do_try (rep (ident <|> kwd "_") <& kwd "->"))
     <&> do_lazy apply_term
     <& kwd "}"
     <$> function

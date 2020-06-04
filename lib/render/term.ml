@@ -8,7 +8,7 @@ let pp_native ppf = function
 
 let rec pp_case ppf = function
   | [] -> ()
-  | (t, e) :: l -> Format.fprintf ppf "@ %a-> %a%a" Type.pp t pp e pp_case l
+  | (t, e) :: l -> Format.fprintf ppf "@ is %a -> %a%a" Type.pp t pp e pp_case l
 
 and pp_when_let ppf = function
   | None -> ()
