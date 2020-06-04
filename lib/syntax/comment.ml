@@ -44,7 +44,7 @@ struct
     let rec content () =
       spaces
       <?> (function s -> List.exists (( = ) '\n') s)
-      <$> (fun _ -> "")
+      <$> constant ""
       <|> (any <&> do_lazy content <$> uncurry ( ^ ))
     in
     kwd "--" &> do_lazy content
