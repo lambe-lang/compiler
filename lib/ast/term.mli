@@ -13,6 +13,7 @@ type t =
   | Apply of t * t
   (* Let constructions *)
   | Let of string * t * t
+  | LetImpl of Type.t * t
   (* Smart cast *)
   | When of (string option * t) * (Type.t * t) list
   | With of t * (string * t) list

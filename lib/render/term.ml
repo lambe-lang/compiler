@@ -30,6 +30,8 @@ and pp ppf = function
   | Apply (t1, (Apply (_, _) as t2)) -> Format.fprintf ppf "%a (%a)" pp t1 pp t2
   | Apply (t1, t2) -> Format.fprintf ppf "%a %a" pp t1 pp t2
   | Let (n, t1, t2) ->
-    Format.fprintf ppf "@[<v>let@[<v> %s =@ %a@]@ in %a@]" n pp t1 pp t2
+    Format.fprintf ppf "@[<v>let @[<v>%s = %a@]@ in @[<v>%a@]@]" n pp t1 pp t2
+  | LetImpl (t1, t2) ->
+    Format.fprintf ppf "@[<v>let impl@[<v> %a@]@ in @[<v>%a@]@]" Type.pp t1 pp t2
   | When (n, c) -> Format.fprintf ppf "@[<v>%a%a@]" pp_when n pp_case c
   | With (t, l) -> Format.fprintf ppf "%a%a" pp t pp_with l

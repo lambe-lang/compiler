@@ -54,9 +54,10 @@ struct
 
   let name_type = name <$> (fun f -> Lambe_ast.Type.Variable f)
 
+
   let rec let_term () =
-    kwd "let"
-    &> ident
+    do_try (kwd "let"
+    &> ident)
     <&> optrep (ident <|> kwd "_")
     <& kwd "="
     <&> do_lazy apply_term
@@ -65,6 +66,16 @@ struct
     <$> function
     | ((i, l), a), b ->
       Let (i, List.fold_right (fun t a -> Abstraction (t, a)) l a, b)
+
+  and let_term_impl () =
+    kwd "let"
+    &> kwd "impl"
+    &> Type.main
+    <& kwd "in"
+    <&> do_lazy apply_term
+    <$> function
+    | a, b ->
+      LetImpl (a, b)
 
   and function_term () =
     kwd "{"
@@ -91,6 +102,7 @@ struct
 
   and simple_term () =
     do_lazy let_term
+    <|> do_lazy let_term_impl
     <|> native_term
     <|> ident_term
     <|> do_lazy function_term
