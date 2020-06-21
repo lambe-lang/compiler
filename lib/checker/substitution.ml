@@ -8,7 +8,7 @@ let substitute =
     | Forall (m, k, t2) ->
       let t2' =
         if n = m
-        then Forall (n, k, substitute n v t2)
+        then Forall (n, k, t2)
         else Forall (m, k, substitute n v t2)
       in
       Forall (m, k, t2')
