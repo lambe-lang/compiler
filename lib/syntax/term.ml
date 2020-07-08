@@ -54,10 +54,8 @@ struct
 
   let name_type = name <$> (fun f -> Lambe_ast.Type.Variable f)
 
-
   let rec let_term () =
-    do_try (kwd "let"
-    &> ident)
+    do_try (kwd "let" &> ident)
     <&> optrep (ident <|> kwd "_")
     <& kwd "="
     <&> do_lazy apply_term
@@ -73,9 +71,7 @@ struct
     &> Type.main
     <& kwd "in"
     <&> do_lazy apply_term
-    <$> function
-    | a, b ->
-      LetImpl (a, b)
+    <$> (function a, b -> LetImpl (a, b))
 
   and function_term () =
     kwd "{"
@@ -91,7 +87,9 @@ struct
     &> opt (kwd "let" &> ident <& kwd "=")
     <&> do_lazy apply_term
     <&> rep (do_lazy case_term)
-    <$> (function n, l -> When (n, l))
+    <$> function
+    | (None, t), l -> When (t, l)
+    | (Some n, t), l -> Let (n, t, When (Variable n, l))
 
   and case_term () = kwd "is" &> name_type <& kwd "->" <&> do_lazy apply_term
 

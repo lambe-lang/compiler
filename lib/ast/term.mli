@@ -15,6 +15,6 @@ type t =
   | Let of string * t * t
   | LetImpl of Type.t * t
   (* Smart cast *)
-  | When of (string option * t) * (Type.t * t) list
+  | When of t * (Type.t * t) list
   (* Evolution *)
   | With of t * (string * t) list

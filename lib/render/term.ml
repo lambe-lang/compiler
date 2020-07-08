@@ -10,13 +10,6 @@ let rec pp_case ppf = function
   | [] -> ()
   | (t, e) :: l -> Format.fprintf ppf "@ is %a -> %a%a" Type.pp t pp e pp_case l
 
-and pp_when_let ppf = function
-  | None -> ()
-  | Some n -> Format.fprintf ppf "let %s = " n
-
-and pp_when ppf = function
-  | w, e -> Format.fprintf ppf "when %a%a" pp_when_let w pp e
-
 and pp_with ppf = function
   | [] -> ()
   | (n, t) :: l -> Format.fprintf ppf " with %s=%a%a" n pp t pp_with l
@@ -32,6 +25,7 @@ and pp ppf = function
   | Let (n, t1, t2) ->
     Format.fprintf ppf "@[<v>let @[<v>%s = %a@]@ in @[<v>%a@]@]" n pp t1 pp t2
   | LetImpl (t1, t2) ->
-    Format.fprintf ppf "@[<v>let impl@[<v> %a@]@ in @[<v>%a@]@]" Type.pp t1 pp t2
-  | When (n, c) -> Format.fprintf ppf "@[<v>%a%a@]" pp_when n pp_case c
+    Format.fprintf ppf "@[<v>let impl@[<v> %a@]@ in @[<v>%a@]@]" Type.pp t1 pp
+      t2
+  | When (n, c) -> Format.fprintf ppf "@[<v>when %a %a@]" pp n pp_case c
   | With (t, l) -> Format.fprintf ppf "%a%a" pp t pp_with l
