@@ -124,7 +124,7 @@ struct
     <&> Type.main
     <&> for_directive
     <&> with_directive
-    <&> ( opt (kwd "{" &> do_lazy entities <& kwd "}")
+    <&> ( opt (kwd "{" &> optrep (do_lazy entity) <& kwd "}")
         <$> (function None -> [] | Some l -> l) )
     <$> (function (((p, t), f), w), e -> Impl (p, t, f, w, e))
 
@@ -138,11 +138,5 @@ struct
     <|> do_lazy trait_entity
     <|> do_lazy impl_entity
 
-  and entities () =
-    do_lazy entity
-    <&> do_lazy entities
-    <$> (function e, l -> e :: l)
-    <|> return []
-
-  let main = entities ()
+  let main = optrep (entity ())
 end
