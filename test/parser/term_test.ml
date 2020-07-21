@@ -37,11 +37,10 @@ let cases =
   ; "a ::", Apply (Variable "a", Variable "::")
   ; "a = b", Apply (Apply (Variable "a", Variable "="), Variable "b")
   ; ( "when a is (::) -> a "
-    , When ((None, Variable "a"), [ Lambe_ast.Type.Variable "::", Variable "a" ])
-    )
+    , When (Variable "a", [ Lambe_ast.Type.Variable "::", Variable "a" ]) )
   ; ( "when a is (::) -> f true is Nil -> f false "
     , When
-        ( (None, Variable "a")
+        ( Variable "a"
         , [
             Lambe_ast.Type.Variable "::", Apply (Variable "f", Variable "true")
           ; Lambe_ast.Type.Variable "Nil", Apply (Variable "f", Variable "false")
