@@ -1,4 +1,4 @@
--{
+--{
     Recursive schema definition and fold implementation
 }
 
@@ -62,7 +62,7 @@ impl Fix Exp {
 
 -- Use case
 
--{
+--{
     The expression `(bool true) && (bool false) fold { _ pretty }`
     returns a string representation and the expression
     `(bool true) && (bool false) fold { _ eval }` returns a boolean

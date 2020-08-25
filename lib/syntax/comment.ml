@@ -10,7 +10,7 @@ struct
   open Transept_utils.Utils
   open Parser
 
-  let keywords = [ "-{"; "--" ]
+  let keywords = [ "--{"; "--" ]
 
   let any = Lambe_lexer.Lexeme.(any <$> to_string)
 
@@ -38,7 +38,7 @@ struct
       <|> do_lazy (open_block content d)
       <|> do_lazy (any_block content d)
     in
-    kwd "-{" &> do_lazy (content 0)
+    kwd "--{" &> do_lazy (content 0)
 
   let commentLine =
     let rec content () =
@@ -49,7 +49,7 @@ struct
     in
     kwd "--" &> do_lazy content
 
-  let comment = commentLine <|> commentBlock
+  let comment = commentBlock <|> commentLine
 
   let main = comment
 end

@@ -30,7 +30,7 @@ impl forall a. zipper a for Zipper a {
 
     def right =
         let pair =
-            when let r = (self right)
+            when let r = self right
             is Nil  -> self.default :: self.left , $ List[self.default]
             is Cons -> r.head :: self.left , $ r.tail
         in self with left = pair.fst
