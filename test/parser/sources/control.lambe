@@ -13,7 +13,7 @@ trait Applicative (f:type->type) with Functor f {
     def (,) = self product
 
     sig (<*>) : forall a b. self -> f a -> f b for f (a -> b)
-    def (<*>) a = { _.fst _.snd } <$> (f,a)
+    def (<*>) a = { _.fst _.snd } <$> (self,a)
 
     sig (<**>) : forall a b. self -> f (a -> b) -> f b for f a
     def (<**>) f = f <*> self

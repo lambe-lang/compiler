@@ -34,8 +34,8 @@ impl Exp string {
     def pretty e =
         when e
             is Bool -> e.value to_string
-            is Or -> "(%1 || %2)" e.left e.right
-            is And -> "(%1 && %2)" e.left e.right
+            is Or   -> "(%1 || %2)" e.left e.right
+            is And  -> "(%1 && %2)" e.left e.right
 }
 
 impl Exp bool {

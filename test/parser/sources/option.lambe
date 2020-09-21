@@ -38,7 +38,7 @@ impl forall a. SemiGroup (Option a) with SemiGroup a {
             is Some -> self.value compose b.value
 }
 
-impl Monoid int {
+impl Monoid Option {
     def neutral = None
 }
 
