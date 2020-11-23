@@ -10,23 +10,21 @@ type Bool = True | False
 
 -- section foldable
 
-trait foldable s for s {
+trait Foldable s for s {
     sig fold : forall b. self -> (True -> b) -> (False -> b) -> b
 }
 
-impl foldable True {
+impl Foldable True {
     def fold t _ = t self
 }
 
-impl foldable False {
+impl Foldable False {
     def fold _ f = f self
 }
 
-impl foldable Bool
-    with foldable True
-    with foldable False
+impl Foldable Bool with Foldable True with Foldable False
 
--- The operation trait defines basic capabilities for deferred boolean
+-- The Operation trait defines basic capabilities for deferred boolean
 
 type bool = forall a. a -> Bool
 
@@ -36,7 +34,7 @@ def true = { True }
 sig false : bool
 def false = { False }
 
-trait operation for bool with foldable Bool {
+trait Operation for bool with Foldable Bool {
     sig (||) : self -> self -> self
     def (||) b = { self () fold true b }
 

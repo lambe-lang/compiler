@@ -20,7 +20,7 @@ trait Applicative (f:type->type) with Functor f {
 }
 
 trait Monad (f:type->type) with Functor f {
-    sig returns : forall a. a -> f a
+    sig returns : forall a. a -> f a                            -- can be ignored
     def returns = pure
 
     sig flatten : forall a. self -> f a for f (f a)
@@ -28,7 +28,7 @@ trait Monad (f:type->type) with Functor f {
     sig bind : forall a b. self -> (a -> f b) -> f b for f a
     def bind f = f map self flatten
 
-    sig (>>=) : forall a b. self -> (a -> f b) -> f b for f a
+    sig (>>=) : forall a b. self -> (a -> f b) -> f b for f a   -- can be ignored
     def (>>=) = self bind
 
     sig (=<<) : forall a b. self -> f a -> f b for a -> f b

@@ -20,7 +20,7 @@ type Exp a = Bool | Or a | And a
 -- Associated functor | Can generate a free monad right now
 
 impl Functor Exp {
-    def map e =
+    def f map e =
         when e
         is Bool -> e
         is Or -> Or (self e.left) (self e.right)
