@@ -22,7 +22,9 @@ impl Foldable False {
     def fold _ f = f self
 }
 
-impl Foldable Bool with Foldable True with Foldable False
+impl Foldable Bool
+    with Foldable True
+    with Foldable False
 
 -- The Operation trait defines basic capabilities for deferred boolean
 

@@ -1,7 +1,21 @@
-trait SemiGroup a {
-    sig compose : self -> self -> self for a
+trait SemiGroup a for a {
+    sig compose : self -> self -> self
 }
 
 trait Monoid a with SemiGroup a {
     sig neutral : a
+}
+
+--{
+    ```
+    impl SemiGroup Int {
+        def compose = self +
+    }
+
+    impl Monoid Int {
+        def neutral = 0
+    }
+    ```
+
+    `Monoid Int neutral compose 1`
 }

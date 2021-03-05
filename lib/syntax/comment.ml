@@ -7,7 +7,7 @@ struct
 
   open Lambe_lexer.Lexer.Token (Parser)
 
-  open Transept_utils.Utils
+  open Transept.Utils
   open Parser
 
   let keywords = [ "--{"; "--" ]
