@@ -21,7 +21,8 @@ let cases =
     , [
         Entity.Sig
           ( "::"
-          , Type.(Forall ("a", Kind.Type, Apply (Variable "list", Variable "a")))
+          , Type.(
+              Forall ("a", Kind.Type, Apply (Variable "list", Variable "a")))
           , None
           , [] )
       ] )
@@ -141,5 +142,5 @@ let test_cases =
   , List.map
       (fun (input, expected) ->
         test_case ("Should parse " ^ input) `Quick (fun () ->
-            should_parse input expected))
+            should_parse input expected ))
       cases )

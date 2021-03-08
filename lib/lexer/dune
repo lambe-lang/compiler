@@ -1,5 +1,0 @@
-(library
- (name lambe_lexer)
- (public_name lambe.lexer)
- (libraries transept)
- (modules_without_implementation location))

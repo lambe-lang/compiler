@@ -1,5 +1,9 @@
-open Lambe_ast.Kind
+open Lambe_ast
 
-let rec pp ppf = function
-  | Arrow (l, r) -> Format.fprintf ppf "(%a) -> %a" pp l pp r
-  | Type -> Format.fprintf ppf "type"
+module Render = struct
+  let rec pp ppf =
+    let open Kind in
+    function
+    | Arrow (l, r, _) -> Format.fprintf ppf "(%a) -> %a" pp l pp r
+    | Type _ -> Format.fprintf ppf "type"
+end

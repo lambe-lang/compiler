@@ -1,12 +1,12 @@
 .PHONY: info init all test clean fmt
 
 info:
-	echo "make [init|all|test|clean|fmt]"
+	echo "make [init|build|test|clean|fmt]"
 
 init:
 	eval `(opam env)`
 
-all:
+build:
 	dune build
 
 test:

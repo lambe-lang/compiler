@@ -1,3 +1,0 @@
-(test
- (name main_test)
- (libraries alcotest lambe.ast lambe.render lambe.syntax))

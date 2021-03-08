@@ -30,5 +30,5 @@ let test_cases =
   , List.map
       (fun (input, expected) ->
         test_case ("Should parse " ^ input) `Quick (fun () ->
-            should_parse input expected))
+            should_parse input expected ))
       cases )

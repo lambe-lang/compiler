@@ -1,5 +1,0 @@
-(library
- (name lambe_syntax)
- (public_name lambe.syntax)
- (libraries lambe.ast lambe.lexer)
- (modules_without_implementation entry))

@@ -23,5 +23,5 @@ let test_cases =
             let t = Sys.time () in
             let fx = should_parse @@ Ioutils.read_fully filename in
             let () = Printf.printf "Execution time: %fs\n" (Sys.time () -. t) in
-            fx))
+            fx ))
       cases )

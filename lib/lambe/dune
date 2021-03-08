@@ -1,4 +1,0 @@
-(executable
- (name lambe)
- (public_name lambe)
- (libraries lambe.ast lambe.syntax lambe.checker lambe.render))
