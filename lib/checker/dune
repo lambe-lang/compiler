@@ -2,4 +2,4 @@
  (name lambe_checker)
  (public_name lambe.checker)
  (libraries lambe.ast)
- (modules kind type))
+ (modules variable gamma kind type))

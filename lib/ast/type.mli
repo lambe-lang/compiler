@@ -24,7 +24,7 @@ M = {mi􏰁εi}I
 
 *)
 
-type 'a set = (string * 'a) list
+type 'a definitions = (string * 'a) list
 
 type 'a t =
   | Variable of string * 'a
@@ -35,10 +35,15 @@ type 'a t =
   | Forall of string * 'a Kind.t * 'a t * 'a
   | Exists of string * 'a Kind.t * 'a t * 'a
   | Rec of string * 'a t * 'a
-  | Const of string * (string * 'a t) list * 'a
+  | Const of string * 'a t definitions * 'a
   | Trait of 'a gamma * 'a
 
-and 'a gamma = Gamma of 'a Kind.t set * 'a t set * 'a t set * 'a gamma list
+and 'a gamma =
+  | Gamma of
+      'a Kind.t definitions
+      * 'a t definitions
+      * 'a t definitions
+      * 'a gamma list
 
 (*
    The polymorphic type 'a holds open informations
