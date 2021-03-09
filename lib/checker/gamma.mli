@@ -7,15 +7,15 @@ module Monoid : sig
 end
 
 module Helpers : sig
-  val k_get : 'a Type.gamma -> 'a Kind.t Type.definitions
+  val k_get : 'a Type.gamma -> 'a Kind.t Type.dictionary
 
-  val k_set : 'a Kind.t Type.definitions -> 'a Type.gamma
+  val k_set : 'a Kind.t Type.dictionary -> 'a Type.gamma
 
-  val t_get : 'a Type.gamma -> 'a Type.t Type.definitions
+  val t_get : 'a Type.gamma -> 'a Type.t Type.dictionary
 
-  val t_set : 'a Type.t Type.definitions -> 'a Type.gamma
+  val t_set : 'a Type.t Type.dictionary -> 'a Type.gamma
 
-  val s_get : 'a Type.gamma -> 'a Type.t Type.definitions
+  val s_get : 'a Type.gamma -> 'a Type.t Type.dictionary
 
   val w_get : 'a Type.gamma -> 'a Type.gamma list
 end

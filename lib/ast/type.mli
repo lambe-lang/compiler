@@ -24,7 +24,7 @@ M = {mi􏰁εi}I
 
 *)
 
-type 'a definitions = (string * 'a) list
+type 'a dictionary = (string * 'a) list
 
 type 'a t =
   | Variable of string * 'a
@@ -35,14 +35,14 @@ type 'a t =
   | Forall of string * 'a Kind.t * 'a t * 'a
   | Exists of string * 'a Kind.t * 'a t * 'a
   | Rec of string * 'a t * 'a
-  | Const of string * 'a t definitions * 'a
+  | Const of string * 'a t dictionary * 'a
   | Trait of 'a gamma * 'a
 
 and 'a gamma =
   | Gamma of
-      'a Kind.t definitions
-      * 'a t definitions
-      * 'a t definitions
+      'a Kind.t dictionary
+      * 'a t dictionary
+      * 'a t dictionary
       * 'a gamma list
 
 (*
