@@ -18,7 +18,7 @@ module Substitution = struct
     | Arrow (t1, t2, s) -> Arrow (substitute v r t1, substitute v r t2, s)
     | Invoke (t1, t2, s) -> Invoke (substitute v r t1, substitute v r t2, s)
     | Apply (t1, t2, s) -> Apply (substitute v r t1, substitute v r t2, s)
-    | Sum (t1, t2, s) -> Sum (substitute v r t1, substitute v r t2, s)
+    | Union (t1, t2, s) -> Union (substitute v r t1, substitute v r t2, s)
     | Forall (a, _, _, _) when a = v -> t
     | Forall (a, k, t1, s) -> Forall (a, k, substitute v r t1, s)
     | Exists (a, _, _, _) when a = v -> t
@@ -30,15 +30,28 @@ module Substitution = struct
 end
 
 module Checker = struct
-  type 'a state = Variable.t -> bool * Variable.t
+  type 'a state = Context.Variables. t -> bool * Context.Variables.t
 
   (* Should return a State *)
   let rec subsume g t1 t2 v =
     let open Type in
     let open Gamma in
+    let open Context in
     let open Substitution in
     match t1, t2 with
     | _ when t1 = t2 -> true, v
+    | t, Apply (Forall (a1, _, t1, _), t2, _) ->
+      subsume g t (substitute a1 t2 t1) v
+    | Apply (Forall (a1, _, t1, _), t2, _), t ->
+      subsume g (substitute a1 t2 t1) t v
+    | Apply (Variable (n, _), t2, s), t -> (
+      match List.find_opt (fun (m, _) -> n = m) (Helpers.t_get g) with
+      | Some (_, t1) -> subsume g (Apply (t1, t2, s)) t v
+      | _ -> false, v )
+    | t, Apply (Variable (n, _), t2, s) -> (
+      match List.find_opt (fun (m, _) -> n = m) (Helpers.t_get g) with
+      | Some (_, t1) -> subsume g t (Apply (t1, t2, s)) v
+      | _ -> false, v )
     | Arrow (t1, t2, _), Arrow (t3, t4, _) ->
       let b1, v1 = subsume g t3 t1 v in
       if b1
@@ -53,7 +66,14 @@ module Checker = struct
         let b2, v2 = subsume g t2 t4 v1 in
         b1 && b2, v2
       else false, v
-    | t1, Sum (t2, t3, _) ->
+    | Union (t1, t2, _), t3 ->
+      let b1, v1 = subsume g t1 t3 v in
+      if b1
+      then
+        let b2, v2 = subsume g t2 t3 v1 in
+        b1 && b2, v2
+      else false, v
+    | t1, Union (t2, t3, _) ->
       let b1, v1 = subsume g t1 t2 v in
       if b1
       then b1, v1
@@ -61,7 +81,7 @@ module Checker = struct
         let b2, v2 = subsume g t1 t3 v1 in
         b2, v2
     | Rec (a1, t1, s1), Rec (a2, t2, s2) ->
-      let n, v = Variable.fresh v in
+      let n, v = Variables.fresh v in
       let t1 = substitute a1 (Variable (n, s1)) t1 in
       let t2 = substitute a2 (Variable (n, s2)) t2 in
       subsume g t1 t2 v
@@ -70,15 +90,15 @@ module Checker = struct
     | Const (n1, _, _), Const (n2, _, _) when n1 = n2 -> false, v
     | Forall (a1, k1, t1, s1), Forall (a2, _ (*k2*), t2, s2) ->
       (* Relation between k1 et k2 *)
-      let n, v = Variable.fresh v in
-      let g = Monoid.combine g (Helpers.k_set [ n, k1 ]) in
+      let n, v = Variables.fresh v in
+      let g = Helpers.k_set [ n, k1 ] + g in
       let t1 = substitute a1 (Variable (n, s1)) t1 in
       let t2 = substitute a2 (Variable (n, s2)) t2 in
       subsume g t1 t2 v
     | Exists (a1, k1, t1, s1), Exists (a2, _ (*k2*), t2, s2) ->
       (* Relation between k1 et k2 *)
-      let n, v = Variable.fresh v in
-      let g = Monoid.combine g (Helpers.k_set [ n, k1 ]) in
+      let n, v = Variables.fresh v in
+      let g = Helpers.k_set [ n, k1 ] + g in
       let t1 = substitute a1 (Variable (n, s1)) t1 in
       let t2 = substitute a2 (Variable (n, s2)) t2 in
       subsume g t1 t2 v

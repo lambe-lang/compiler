@@ -1,5 +1,12 @@
 open Lambe_ast.Type
 
+module Monoid = struct
+  let neutral = Gamma ([], [], [], [])
+
+  let combine (Gamma (k, t, s, w)) (Gamma (k', t', s', w')) =
+    Gamma (k @ k', t @ t', s @ s', w @ w')
+end
+
 module Helpers = struct
   let k_get = function Gamma (k, _, _, _) -> k
 
@@ -14,9 +21,8 @@ module Helpers = struct
   let w_get = function Gamma (_, _, _, w) -> w
 end
 
-module Monoid = struct
-  let neutral = Gamma ([], [], [], [])
+let create = Monoid.neutral
 
-  let combine (Gamma (k, t, s, w)) (Gamma (k', t', s', w')) =
-    Gamma (k @ k', t @ t', s @ s', w @ w')
-end
+let merge = Monoid.combine
+
+let ( + ) = merge

@@ -19,3 +19,9 @@ module Helpers : sig
 
   val w_get : 'a Type.gamma -> 'a Type.gamma list
 end
+
+val create : 'a Type.gamma
+
+val merge : 'a Type.gamma -> 'a Type.gamma -> 'a Type.gamma
+
+val ( + ) : 'a Type.gamma -> 'a Type.gamma -> 'a Type.gamma

@@ -18,7 +18,7 @@ let should_reject_type_and_type_to_type () =
 
 let test_cases =
   let open Alcotest in
-  ( "Kind checker"
+  ( "Kind subsume"
   , [
       test_case "Should accept * < *" `Quick should_accept_type_and_type
     ; test_case "Should accept * -> * < *" `Quick

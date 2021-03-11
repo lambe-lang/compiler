@@ -1,3 +1,3 @@
 let () =
   let open Alcotest in
-  run "checker" [ Kind_checker.test_cases ]
+  run "checker" [ Kind_subsume.test_cases; Type_subsume.test_cases ]

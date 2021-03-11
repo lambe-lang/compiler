@@ -31,7 +31,7 @@ type 'a t =
   | Arrow of 'a t * 'a t * 'a
   | Invoke of 'a t * 'a t * 'a
   | Apply of 'a t * 'a t * 'a
-  | Sum of 'a t * 'a t * 'a
+  | Union of 'a t * 'a t * 'a
   | Forall of string * 'a Kind.t * 'a t * 'a
   | Exists of string * 'a Kind.t * 'a t * 'a
   | Rec of string * 'a t * 'a
@@ -40,10 +40,7 @@ type 'a t =
 
 and 'a gamma =
   | Gamma of
-      'a Kind.t dictionary
-      * 'a t dictionary
-      * 'a t dictionary
-      * 'a gamma list
+      'a Kind.t dictionary * 'a t dictionary * 'a t dictionary * 'a gamma list
 
 (*
    The polymorphic type 'a holds open informations
