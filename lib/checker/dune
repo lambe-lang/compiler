@@ -1,5 +1,5 @@
 (library
  (name lambe_checker)
  (public_name lambe.checker)
- (libraries lambe.ast)
+ (libraries lambe.ast lambe.render)
  (modules context gamma kind type))

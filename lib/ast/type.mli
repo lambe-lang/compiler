@@ -6,7 +6,7 @@ Type and environment definition
   | α
   | m
   | τ → τ
-  | τ􏰀 #> τ
+  | τ􏰀 @> τ
   | τ τ
   | τ + τ
   | ∀(α : κ).τ
@@ -26,16 +26,21 @@ M = {mi􏰁εi}I
 
 type 'a dictionary = (string * 'a) list
 
+type id = string
+
+type var = string
+
 type 'a t =
-  | Variable of string * 'a
+  | Variable of var * 'a
   | Arrow of 'a t * 'a t * 'a
   | Invoke of 'a t * 'a t * 'a
   | Apply of 'a t * 'a t * 'a
+  | Access of 'a t * id * 'a
   | Union of 'a t * 'a t * 'a
-  | Forall of string * 'a Kind.t * 'a t * 'a
-  | Exists of string * 'a Kind.t * 'a t * 'a
-  | Rec of string * 'a t * 'a
-  | Const of string * 'a t dictionary * 'a
+  | Forall of var * 'a Kind.t * 'a t * 'a
+  | Exists of var * 'a Kind.t * 'a t * 'a
+  | Rec of var * 'a t * 'a
+  | Const of id * 'a t dictionary * 'a
   | Trait of 'a gamma * 'a
 
 and 'a gamma =
