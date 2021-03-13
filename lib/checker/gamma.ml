@@ -21,7 +21,7 @@ module Helpers = struct
   let w_get = function Gamma (_, _, _, w) -> w
 end
 
-let create = Monoid.neutral
+let empty = Monoid.neutral
 
 let merge = Monoid.combine
 

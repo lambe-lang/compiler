@@ -136,4 +136,10 @@ module Checker = struct
     (* Trait *)
     | Trait (_, _), Trait (_, _) -> false, v
     | _ -> false, v
+
+  module Operator = struct
+    let ( <? ) t1 t2 c = t1, t2, c
+
+    let ( |- ) g (t1, t2, c) = subsume g t1 t2 c
+  end
 end

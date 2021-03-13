@@ -2,4 +2,8 @@ open Lambe_ast
 
 module Checker : sig
   val subsume : 'a Kind.t -> 'a Kind.t -> bool
+
+  module Operator : sig
+    val ( <? ) : 'a Kind.t -> 'a Kind.t -> bool
+  end
 end
