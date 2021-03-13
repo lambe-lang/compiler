@@ -1,9 +1,7 @@
-open Lambe_ast
-
 module Substitution = struct
   (* Substituste v by r in t *)
   let rec substitute v r t =
-    let open Type in
+    let open Lambe_ast.Type in
     let subst_field (n, t1) = n, substitute v r t1 in
     let rec subst_gamma (Gamma (kd, ty, si, wi)) =
       Gamma
@@ -33,11 +31,36 @@ end
 module Checker = struct
   type 'a state = Context.Variables.t -> bool * Context.Variables.t
 
-  let check _ _ _ = true
+  let rec check g t k =
+    let open Lambe_ast.Type in
+    let module K = Lambe_ast.Kind in
+    let open Kind.Checker.Operator in
+    let open Gamma in
+    match t, k with
+    | Variable (n, _), _ -> (
+      match List.find_opt (fun (m, _) -> n = m) (Helpers.k_get g) with
+      | Some (_, k') -> k' <? k
+      | _ -> false )
+    | Arrow (t1, t2, _), K.Type _ -> check g t1 k && check g t2 k
+    | Invoke (t1, t2, _), K.Type _ -> check g t1 k && check g t2 k
+    | Apply (t1, t2, s), _ ->
+      check g t1 (K.Arrow (K.Type s, K.Type s, s)) && check g t2 k
+    | Access (t, n, s), _ -> check g t (K.Trait ([ n, k ], s))
+    | Union (t1, t2, _), _ -> check g t1 k && check g t2 k
+    | Forall (n, k, t, _), K.Arrow (k1, k2, _) ->
+      let g = Helpers.k_set [ n, k ] + g in
+      k1 <? k && check g t k2
+    | Exists (n, k, t, _), k' ->
+      let g = Helpers.k_set [ n, k ] + g in
+      check g t k'
+    | Rec (n, t, s), _ ->
+      let g = Helpers.k_set [ n, K.Type s ] + g in
+      check g t k
+    | _ -> false
 
   (* Should return a State *)
   let rec subsume g t1 t2 v =
-    let open Type in
+    let open Lambe_ast.Type in
     let open Gamma in
     let open Context in
     let open Substitution in
@@ -138,8 +161,10 @@ module Checker = struct
     | _ -> false, v
 
   module Operator = struct
-    let ( <? ) t1 t2 c = t1, t2, c
+    let ( <:?> ) t1 t2 g = check g t1 t2
 
-    let ( |- ) g (t1, t2, c) = subsume g t1 t2 c
+    let ( <? ) t1 t2 c g = subsume g t1 t2 c
+
+    let ( |- ) g f = f g
   end
 end

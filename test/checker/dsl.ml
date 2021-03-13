@@ -17,7 +17,7 @@ module Types = struct
 
   let ( |@> ) t t' = Type.Invoke (t, t', ())
 
-  let ( % ) t t' = Type.Apply (t, t', ())
+  let ( <*> ) t t' = Type.Apply (t, t', ())
 
   let ( <|> ) t t' = Type.Union (t, t', ())
 

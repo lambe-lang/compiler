@@ -13,15 +13,15 @@ module Checker : sig
     -> bool * Context.Variables.t
 
   module Operator : sig
+    val ( <:?> ) : 'a Type.t -> 'a Kind.t -> 'a Type.gamma -> bool
+
     val ( <? ) :
          'a Type.t
       -> 'a Type.t
       -> Context.Variables.t
-      -> 'a Type.t * 'a Type.t * Context.Variables.t
-
-    val ( |- ) :
-         'a Type.gamma
-      -> 'a Type.t * 'a Type.t * Context.Variables.t
+      -> 'a Type.gamma
       -> bool * Context.Variables.t
+
+    val ( |- ) : 'a Type.gamma -> ('a Type.gamma -> 'b) -> 'b
   end
 end

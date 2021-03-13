@@ -64,11 +64,11 @@ let test_cases =
   let open Alcotest in
   ( "Type subsume"
   , [
-      test_case "Should accept a <? a" `Quick test_case_000
-    ; test_case "Should reject a <? b" `Quick test_case_001
-    ; test_case "Should accept a <? a | b" `Quick test_case_002
-    ; test_case "Should accept a <? b | a" `Quick test_case_003
-    ; test_case "Should accept b | a -> a <? a -> a" `Quick test_case_004
-    ; test_case "Should accept b | a @> a <? a @> a" `Quick test_case_005
-    ; test_case "Should accept b | a <? a | b" `Quick test_case_006
+      test_case "Accept a <? a" `Quick test_case_000
+    ; test_case "Reject a <? b" `Quick test_case_001
+    ; test_case "Accept a <? a | b" `Quick test_case_002
+    ; test_case "Accept a <? b | a" `Quick test_case_003
+    ; test_case "Accept b | a -> a <? a -> a" `Quick test_case_004
+    ; test_case "Accept b | a @> a <? a @> a" `Quick test_case_005
+    ; test_case "Accept b | a <? a | b" `Quick test_case_006
     ] )
