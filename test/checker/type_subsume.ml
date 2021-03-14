@@ -276,6 +276,16 @@ let test_case_027 () =
   Alcotest.(check bool)
     "should accept b=trait { type n = a } |- b.n <? a" expected computed
 
+let test_case_028 () =
+  let expected = true
+  and computed, _ =
+    Helpers.k_set [ "a", Gamma.star ]
+    + Helpers.t_set [ "b", trait [] [] [] [ gamma [] [ "n", v "a" ] [] [] ] ]
+    |- (v "a" <? v "b" @ "n") Variables.create
+  in
+  Alcotest.(check bool)
+    "should accept b=trait { type n = a } |- a <? b.n" expected computed
+
 let test_cases =
   let open Alcotest in
   ( "Type subsume"
@@ -317,4 +327,6 @@ let test_cases =
     ; test_case "Accept b=trait { type n = a } |- b.n <? a" `Quick test_case_026
     ; test_case "Accept b=trait with { type n = a } |- b.n <? a" `Quick
         test_case_027
+    ; test_case "Accept b=trait with { type n = a } |- a <? b.n" `Quick
+        test_case_028
     ] )
