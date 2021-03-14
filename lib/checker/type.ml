@@ -89,6 +89,7 @@ module Checker = struct
     let open Gamma in
     let open Context in
     let open Substitution in
+    let open Kind.Checker.Operator in
     let print_subtype = Lambe_render.Type.Render.subtype Format.err_formatter in
     let _ = print_subtype t1 t2
     and _ = print_string "\n" in
@@ -164,21 +165,19 @@ module Checker = struct
     | Rec (a1, t1', _), t2 -> subsume g (substitute a1 t1 t1') t2 v
     | t1, Rec (a2, t2', _) -> subsume g t1 (substitute a2 t2 t2') v
     (* Forall *)
-    | Forall (a1, k1, t1, s1), Forall (a2, _ (*k2*), t2, s2) ->
-      (* Relation between k1 et k2 ? *)
+    | Forall (a1, k1, t1, s1), Forall (a2, k2, t2, s2) ->
       let n, v = Variables.fresh v in
       let g = Helpers.k_set [ n, k1 ] + g in
       let t1 = substitute a1 (Variable (n, s1)) t1 in
       let t2 = substitute a2 (Variable (n, s2)) t2 in
-      subsume g t1 t2 v
+      if k1 <? k2 then subsume g t1 t2 v else false, v
     (* Exists *)
-    | Exists (a1, k1, t1, s1), Exists (a2, _ (*k2*), t2, s2) ->
-      (* Relation between k1 et k2 *)
+    | Exists (a1, k1, t1, s1), Exists (a2, k2, t2, s2) ->
       let n, v = Variables.fresh v in
       let g = Helpers.k_set [ n, k1 ] + g in
       let t1 = substitute a1 (Variable (n, s1)) t1 in
       let t2 = substitute a2 (Variable (n, s2)) t2 in
-      subsume g t1 t2 v
+      if k1 <? k2 then subsume g t1 t2 v else false, v
     (* Constructor *)
     | Const (n1, l1, _), Const (n2, l2, _) when n1 = n2 ->
       let b =
