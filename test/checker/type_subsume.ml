@@ -179,16 +179,48 @@ let test_case_017 () =
     computed
 
 let test_case_018 () =
-  let expected = false
+  let expected = true
   and computed, _ =
     Gamma.(Helpers.k_set [ "a", star ] + empty)
-    |- ( exists ("x", Gamma.star) (v "x" |-> v "a")
-       <? exists ("y", Gamma.(star |-> star)) (v "y" |-> v "a") )
+    |- ( exists ("x", Gamma.(star |-> star)) (v "x" |-> v "a")
+       <? exists ("y", Gamma.star) (v "y" |-> v "a") )
          Variables.create
   in
   Alcotest.(check bool)
-    "should reject exists(x:*).x -> a <? exists(y:*->*).y -> a" expected
+    "should accept exists(x:*->*).x -> a <? exists(y:*).y -> a" expected
     computed
+
+let test_case_019 () =
+  let expected = true
+  and computed, _ =
+    Gamma.(Helpers.k_set [ "a", star ] + empty)
+    |- (forall ("x", Gamma.star) (v "x") <*> v "a" <? v "a") Variables.create
+  in
+  Alcotest.(check bool) "should accept (forall(x:*).x) a <? a" expected computed
+
+let test_case_020 () =
+  let expected = true
+  and computed, _ =
+    Gamma.(Helpers.k_set [ "a", star ] + empty)
+    |- (v "a" <? (forall ("x", Gamma.star) (v "x") <*> v "a")) Variables.create
+  in
+  Alcotest.(check bool) "should accept a <? (forall(x:*).x) a" expected computed
+
+let test_case_021 () =
+  let expected = true
+  and computed, _ =
+    Gamma.(Helpers.k_set [ "a", star ] + Helpers.t_set [ "b", forall ("x", Gamma.star) (v "x") ])
+    |- (((v "b") <*> v "a") <? v "a") Variables.create
+  in
+  Alcotest.(check bool) "should accept b=(forall(x:*).x) a <? a" expected computed
+
+let test_case_022 () =
+  let expected = true
+  and computed, _ =
+    Gamma.(Helpers.k_set [ "a", star ] + Helpers.t_set [ "b", forall ("x", Gamma.star) (v "x") ])
+    |- ((v "a") <? ((v "b") <*> v "a")) Variables.create
+  in
+  Alcotest.(check bool) "should accept a <? b=(forall(x:*).x) a" expected computed
 
 let test_cases =
   let open Alcotest in
@@ -205,8 +237,7 @@ let test_cases =
         test_case_007
     ; test_case "Accept data C (h:a) (t:b) <? data C (t:b)" `Quick test_case_008
     ; test_case "Reject data C (t:b) <? data C (h:a) (t:b)" `Quick test_case_009
-    ; test_case "Accept mu(x).a -> x <? a -> (mu(x).a -> x)" `Quick
-        test_case_010
+    ; test_case "Accept mu(x).a -> x <? a -> mu(x).a -> x" `Quick test_case_010
     ; test_case "Accept a -> (mu(x).a -> x) <? mu(x).a -> x" `Quick
         test_case_011
     ; test_case "Accept mu(y).a -> y <? mu(x).a -> x" `Quick test_case_012
@@ -222,4 +253,8 @@ let test_cases =
         test_case_017
     ; test_case "Reject exists(x:*).x -> a <? exists(y:*->*).y -> a" `Quick
         test_case_018
+    ; test_case "Accept (forall(x:*).x) a <? a" `Quick test_case_019
+    ; test_case "Accept a <? (forall(x:*).x) a" `Quick test_case_020
+    ; test_case "Accept b=(forall(x:*).x) a <? a" `Quick test_case_021
+    ; test_case "Accept a <? b=(forall(x:*).x) a" `Quick test_case_022
     ] )

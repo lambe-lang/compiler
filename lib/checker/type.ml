@@ -1,3 +1,20 @@
+module TypeContext = struct
+  let get =
+    let open Lambe_ast.Type in
+    function
+    | Variable (_, s) -> s
+    | Arrow (_, _, s) -> s
+    | Invoke (_, _, s) -> s
+    | Apply (_, _, s) -> s
+    | Access (_, _, s) -> s
+    | Union (_, _, s) -> s
+    | Forall (_, _, _, s) -> s
+    | Exists (_, _, _, s) -> s
+    | Rec (_, _, s) -> s
+    | Const (_, _, s) -> s
+    | Trait (_, s) -> s
+end
+
 module Substitution = struct
   (* Substituste v by r in t *)
   let rec substitute v r t =
@@ -36,9 +53,9 @@ module Checker = struct
     Option.fold ~none:false ~some:(fun k' -> k' <? k) (synthetize g t)
 
   and synthetize g t =
-    let open Gamma in
-    let open Lambe_ast.Type in
     let module K = Lambe_ast.Kind in
+    let open Lambe_ast.Type in
+    let open Gamma in
     match t with
     | Variable (n, _) -> (
       match List.find_opt (fun (m, _) -> n = m) (Helpers.k_get g) with
@@ -85,6 +102,7 @@ module Checker = struct
 
   (* Should return a State *)
   let rec subsume g t1 t2 v =
+    let module K = Lambe_ast.Kind in
     let open Lambe_ast.Type in
     let open Gamma in
     let open Context in
@@ -94,7 +112,7 @@ module Checker = struct
     let _ = print_subtype t1 t2
     and _ = print_string "\n" in
     match t1, t2 with
-    | _ when t1 = t2 -> true, v
+    | _ when t1 = t2 -> check g t1 (K.Type (TypeContext.get t1)), v
     (* Apply section *)
     | t, Apply (Forall (a1, _, t1, _), t2, _) ->
       subsume g t (substitute a1 t2 t1) v
