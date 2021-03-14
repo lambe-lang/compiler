@@ -209,18 +209,24 @@ let test_case_020 () =
 let test_case_021 () =
   let expected = true
   and computed, _ =
-    Gamma.(Helpers.k_set [ "a", star ] + Helpers.t_set [ "b", forall ("x", Gamma.star) (v "x") ])
-    |- (((v "b") <*> v "a") <? v "a") Variables.create
+    Gamma.(
+      Helpers.k_set [ "a", star ]
+      + Helpers.t_set [ "b", forall ("x", Gamma.star) (v "x") ])
+    |- (v "b" <*> v "a" <? v "a") Variables.create
   in
-  Alcotest.(check bool) "should accept b=(forall(x:*).x) a <? a" expected computed
+  Alcotest.(check bool)
+    "should accept b=(forall(x:*).x) a <? a" expected computed
 
 let test_case_022 () =
   let expected = true
   and computed, _ =
-    Gamma.(Helpers.k_set [ "a", star ] + Helpers.t_set [ "b", forall ("x", Gamma.star) (v "x") ])
-    |- ((v "a") <? ((v "b") <*> v "a")) Variables.create
+    Gamma.(
+      Helpers.k_set [ "a", star ]
+      + Helpers.t_set [ "b", forall ("x", Gamma.star) (v "x") ])
+    |- (v "a" <? (v "b" <*> v "a")) Variables.create
   in
-  Alcotest.(check bool) "should accept a <? b=(forall(x:*).x) a" expected computed
+  Alcotest.(check bool)
+    "should accept a <? b=(forall(x:*).x) a" expected computed
 
 let test_cases =
   let open Alcotest in
@@ -255,6 +261,6 @@ let test_cases =
         test_case_018
     ; test_case "Accept (forall(x:*).x) a <? a" `Quick test_case_019
     ; test_case "Accept a <? (forall(x:*).x) a" `Quick test_case_020
-    ; test_case "Accept b=(forall(x:*).x) a <? a" `Quick test_case_021
-    ; test_case "Accept a <? b=(forall(x:*).x) a" `Quick test_case_022
+    ; test_case "Accept b=(forall(x:*).x) |- b a <? a" `Quick test_case_021
+    ; test_case "Accept b=(forall(x:*).x) |- a <? b a" `Quick test_case_022
     ] )
