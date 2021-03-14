@@ -5,6 +5,8 @@ module Checker : sig
 
   val check : 'a Type.gamma -> 'a Type.t -> 'a Kind.t -> bool
 
+  val synthetize : 'a Type.gamma -> 'a Type.t -> 'a Kind.t option
+
   val subsume :
        'a Type.gamma
     -> 'a Type.t

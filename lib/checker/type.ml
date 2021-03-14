@@ -32,31 +32,56 @@ module Checker = struct
   type 'a state = Context.Variables.t -> bool * Context.Variables.t
 
   let rec check g t k =
+    let open Kind.Checker.Operator in
+    Option.fold ~none:false ~some:(fun k' -> k' <? k) (synthetize g t)
+
+  and synthetize g t =
+    let open Gamma in
     let open Lambe_ast.Type in
     let module K = Lambe_ast.Kind in
-    let open Kind.Checker.Operator in
-    let open Gamma in
-    match t, k with
-    | Variable (n, _), _ -> (
+    match t with
+    | Variable (n, _) -> (
       match List.find_opt (fun (m, _) -> n = m) (Helpers.k_get g) with
-      | Some (_, k') -> k' <? k
-      | _ -> false )
-    | Arrow (t1, t2, _), K.Type _ -> check g t1 k && check g t2 k
-    | Invoke (t1, t2, _), K.Type _ -> check g t1 k && check g t2 k
-    | Apply (t1, t2, s), _ ->
-      check g t1 (K.Arrow (K.Type s, K.Type s, s)) && check g t2 k
-    | Access (t, n, s), _ -> check g t (K.Trait ([ n, k ], s))
-    | Union (t1, t2, _), _ -> check g t1 k && check g t2 k
-    | Forall (n, k, t, _), K.Arrow (k1, k2, _) ->
+      | Some (_, k') -> Some k'
+      | _ -> None )
+    | Arrow (_, _, s) -> Some (K.Type s)
+    | Invoke (_, _, s) -> Some (K.Type s)
+    | Apply (t1, t2, _) -> (
+      match synthetize g t1 with
+      | Some (K.Arrow (k', k, _)) -> if check g t2 k' then Some k else None
+      | _ -> None )
+    | Access (t1, n, _) -> (
+      match synthetize g t1 with
+      | Some (Trait (l, _)) -> (
+        match List.find_opt (fun (m, _) -> n = m) l with
+        | Some (_, k) -> Some k
+        | None -> None )
+      | _ -> None )
+    | Union (t1, t2, _) -> (
+      match synthetize g t1 with
+      | Some k -> if check g t2 k then Some k else None
+      | None -> None )
+    | Forall (n, k, t, s) -> (
       let g = Helpers.k_set [ n, k ] + g in
-      k1 <? k && check g t k2
-    | Exists (n, k, t, _), k' ->
+      match synthetize g t with
+      | Some k' -> Some (K.Arrow (k, k', s))
+      | None -> None )
+    | Exists (n, k, t, _) ->
       let g = Helpers.k_set [ n, k ] + g in
-      check g t k'
-    | Rec (n, t, s), _ ->
+      synthetize g t
+    | Rec (n, t, s) ->
       let g = Helpers.k_set [ n, K.Type s ] + g in
-      check g t k
-    | _ -> false
+      synthetize g t
+    | Const (_, _, s) -> if check g t (K.Type s) then Some (K.Type s) else None
+    | Trait ((Gamma (k, t, s, w) as g), l) ->
+      if List.for_all (fun (_, t) -> check g t (K.Type l)) t
+         && List.for_all (fun (_, t) -> check g t (K.Type l)) s
+         && List.for_all (fun g -> check empty (Trait (g, l)) (K.Type l)) w
+      then
+        Some
+          (K.Trait
+             (List.fold_left (fun k (Gamma (k', _, _, _)) -> k @ k') k w, l) )
+      else None
 
   (* Should return a State *)
   let rec subsume g t1 t2 v =
@@ -155,7 +180,16 @@ module Checker = struct
       let t2 = substitute a2 (Variable (n, s2)) t2 in
       subsume g t1 t2 v
     (* Constructor *)
-    | Const (n1, _, _), Const (n2, _, _) when n1 = n2 -> false, v
+    | Const (n1, l1, _), Const (n2, l2, _) when n1 = n2 ->
+      let b =
+        List.for_all
+          (fun (n, t2) ->
+            Option.fold ~none:false
+              ~some:(fun (_, t1) -> fst (subsume g t1 t2 v))
+              (List.find_opt (fun (m, _) -> n = m) l1))
+          l2
+      in
+      b, v
     (* Trait *)
     | Trait (_, _), Trait (_, _) -> false, v
     | _ -> false, v
