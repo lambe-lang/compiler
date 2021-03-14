@@ -111,6 +111,13 @@ module Checker = struct
     let print_subtype = Lambe_render.Type.Render.subtype Format.err_formatter in
     let _ = print_subtype t1 t2
     and _ = print_string "\n" in
+    let rec find_type n = function
+      | [] -> None
+      | Gamma (_, t, _, _) :: l -> (
+        match List.find_opt (fun (m, _) -> n = m) t with
+        | Some t -> Some t
+        | None -> find_type n l )
+    in
     match t1, t2 with
     | _ when t1 = t2 -> check g t1 (K.Type (TypeContext.get t1)), v
     (* Apply section *)
@@ -130,11 +137,17 @@ module Checker = struct
     | t, Access (Trait (g', _), n, _) -> (
       match List.find_opt (fun (m, _) -> n = m) (Helpers.t_get g') with
       | Some (_, t2) -> subsume g t t2 v
-      | _ -> false, v )
+      | _ -> (
+        match find_type n (Helpers.w_get g') with
+        | Some (_, t2) -> subsume g t t2 v
+        | None -> false, v ) )
     | Access (Trait (g', _), n, _), t -> (
       match List.find_opt (fun (m, _) -> n = m) (Helpers.t_get g') with
       | Some (_, t1) -> subsume g t1 t v
-      | _ -> false, v )
+      | _ -> (
+        match find_type n (Helpers.w_get g') with
+        | Some (_, t1) -> subsume g t1 t v
+        | None -> false, v ) )
     | t, Access (Variable (n, _), m, s) -> (
       match List.find_opt (fun (m, _) -> n = m) (Helpers.t_get g) with
       | Some (_, t1) -> subsume g t (Access (t1, m, s)) v
