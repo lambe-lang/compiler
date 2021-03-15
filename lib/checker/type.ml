@@ -19,13 +19,10 @@ module Substitution = struct
   (* Substituste v by r in t *)
   let rec substitute v r t =
     let open Lambe_ast.Type in
+    let open List in
     let subst_field (n, t1) = n, substitute v r t1 in
     let rec subst_gamma (Gamma (kd, ty, si, wi)) =
-      Gamma
-        ( kd
-        , List.map subst_field ty
-        , List.map subst_field si
-        , List.map subst_gamma wi )
+      Gamma (kd, map subst_field ty, map subst_field si, map subst_gamma wi)
     in
     match t with
     | Variable (a, _) when v = a -> r
@@ -41,7 +38,7 @@ module Substitution = struct
     | Exists (a, k, t1, s) -> Exists (a, k, substitute v r t1, s)
     | Rec (a, _, _) when v = a -> t
     | Rec (a, t1, s) -> Rec (a, substitute v r t1, s)
-    | Const (a, l1, s) -> Const (a, List.map subst_field l1, s)
+    | Const (a, l1, s) -> Const (a, map subst_field l1, s)
     | Trait (gamma, s) -> Trait (subst_gamma gamma, s)
 end
 
@@ -56,9 +53,10 @@ module Checker = struct
     let module K = Lambe_ast.Kind in
     let open Lambe_ast.Type in
     let open Gamma in
+    let open List in
     match t with
     | Variable (n, _) -> (
-      match List.find_opt (fun (m, _) -> n = m) (Helpers.k_get g) with
+      match find_opt (fun (m, _) -> n = m) (Helpers.k_get g) with
       | Some (_, k') -> Some k'
       | _ -> None )
     | Arrow (_, _, s) -> Some (K.Type s)
@@ -70,7 +68,7 @@ module Checker = struct
     | Access (t1, n, _) -> (
       match synthetize g t1 with
       | Some (Trait (l, _)) -> (
-        match List.find_opt (fun (m, _) -> n = m) l with
+        match find_opt (fun (m, _) -> n = m) l with
         | Some (_, k) -> Some k
         | None -> None )
       | _ -> None )
@@ -91,13 +89,11 @@ module Checker = struct
       synthetize g t
     | Const (_, _, s) -> if check g t (K.Type s) then Some (K.Type s) else None
     | Trait ((Gamma (k, t, s, w) as g), l) ->
-      if List.for_all (fun (_, t) -> check g t (K.Type l)) t
-         && List.for_all (fun (_, t) -> check g t (K.Type l)) s
-         && List.for_all (fun g -> check empty (Trait (g, l)) (K.Type l)) w
+      if for_all (fun (_, t) -> check g t (K.Type l)) t
+         && for_all (fun (_, t) -> check g t (K.Type l)) s
+         && for_all (fun g -> check empty (Trait (g, l)) (K.Type l)) w
       then
-        Some
-          (K.Trait
-             (List.fold_left (fun k (Gamma (k', _, _, _)) -> k @ k') k w, l) )
+        Some (K.Trait (fold_left (fun k (Gamma (k', _, _, _)) -> k @ k') k w, l))
       else None
 
   (* Should return a State *)
@@ -108,13 +104,14 @@ module Checker = struct
     let open Context in
     let open Substitution in
     let open Kind.Checker.Operator in
+    let open List in
     let print_subtype = Lambe_render.Type.Render.subtype Format.err_formatter in
     let _ = print_subtype t1 t2
     and _ = print_string "\n" in
     let rec find_type n = function
       | [] -> None
       | Gamma (_, t, _, _) :: l -> (
-        match List.find_opt (fun (m, _) -> n = m) t with
+        match find_opt (fun (m, _) -> n = m) t with
         | Some t -> Some t
         | None -> find_type n l )
     in
@@ -126,34 +123,34 @@ module Checker = struct
     | Apply (Forall (a1, _, t1, _), t2, _), t ->
       subsume g (substitute a1 t2 t1) t v
     | t, Apply (Variable (n, _), t2, s) -> (
-      match List.find_opt (fun (m, _) -> n = m) (Helpers.t_get g) with
+      match find_opt (fun (m, _) -> n = m) (Helpers.t_get g) with
       | Some (_, t1) -> subsume g t (Apply (t1, t2, s)) v
       | _ -> false, v )
     | Apply (Variable (n, _), t2, s), t -> (
-      match List.find_opt (fun (m, _) -> n = m) (Helpers.t_get g) with
+      match find_opt (fun (m, _) -> n = m) (Helpers.t_get g) with
       | Some (_, t1) -> subsume g (Apply (t1, t2, s)) t v
       | _ -> false, v )
     (* Access Section *)
     | t, Access (Trait (g', _), n, _) -> (
-      match List.find_opt (fun (m, _) -> n = m) (Helpers.t_get g') with
+      match find_opt (fun (m, _) -> n = m) (Helpers.t_get g') with
       | Some (_, t2) -> subsume g t t2 v
       | _ -> (
         match find_type n (Helpers.w_get g') with
         | Some (_, t2) -> subsume g t t2 v
         | None -> false, v ) )
     | Access (Trait (g', _), n, _), t -> (
-      match List.find_opt (fun (m, _) -> n = m) (Helpers.t_get g') with
+      match find_opt (fun (m, _) -> n = m) (Helpers.t_get g') with
       | Some (_, t1) -> subsume g t1 t v
       | _ -> (
         match find_type n (Helpers.w_get g') with
         | Some (_, t1) -> subsume g t1 t v
         | None -> false, v ) )
     | t, Access (Variable (n, _), m, s) -> (
-      match List.find_opt (fun (m, _) -> n = m) (Helpers.t_get g) with
+      match find_opt (fun (m, _) -> n = m) (Helpers.t_get g) with
       | Some (_, t1) -> subsume g t (Access (t1, m, s)) v
       | _ -> false, v )
     | Access (Variable (n, _), m, s), t -> (
-      match List.find_opt (fun (m, _) -> n = m) (Helpers.t_get g) with
+      match find_opt (fun (m, _) -> n = m) (Helpers.t_get g) with
       | Some (_, t1) -> subsume g (Access (t1, m, s)) t v
       | _ -> false, v )
     (* Arrow *)
@@ -211,17 +208,13 @@ module Checker = struct
       if k1 <? k2 then subsume g t1 t2 v else false, v
     (* Constructor *)
     | Const (n1, l1, _), Const (n2, l2, _) when n1 = n2 ->
-      let b =
-        List.for_all
-          (fun (n, t2) ->
-            Option.fold ~none:false
-              ~some:(fun (_, t1) -> fst (subsume g t1 t2 v))
-              (List.find_opt (fun (m, _) -> n = m) l1))
-          l2
-      in
-      b, v
+      Gamma.(l1 <? l2) (fun t1 t2 -> fst (subsume g t1 t2 v)), v
     (* Trait *)
-    | Trait (_, _), Trait (_, _) -> false, v
+    | Trait (Gamma (k, t, s, _), l), Trait (Gamma (k', t', s', _), l') ->
+      ( Trait (k, l) <? Trait (k', l')
+        && Gamma.(t <? t') (fun t1 t2 -> fst (subsume g t1 t2 v))
+        && Gamma.(s <? s') (fun t1 t2 -> fst (subsume g t1 t2 v))
+      , v )
     | _ -> false, v
 
   module Operator = struct

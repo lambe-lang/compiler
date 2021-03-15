@@ -26,3 +26,11 @@ let empty = Monoid.neutral
 let merge = Monoid.combine
 
 let ( + ) = merge
+
+let ( <? ) l1 l2 f =
+  List.for_all
+    (fun (n, t2) ->
+      Option.fold ~none:false
+        ~some:(fun (_, t1) -> f t1 t2)
+        (List.find_opt (fun (m, _) -> n = m) l1))
+    l2

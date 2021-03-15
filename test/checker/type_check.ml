@@ -32,7 +32,7 @@ let test_case_003 () =
     Gamma.(Helpers.k_set [ "a", star |-> star ] + empty)
     |- (v "a" <*> v "a" <:?> Gamma.star)
   in
-  Alcotest.(check bool) "should accept a a :? *" expected computed
+  Alcotest.(check bool) "should accept a:*->* |- a a :? *" expected computed
 
 let test_case_004 () =
   let expected = false
@@ -40,7 +40,7 @@ let test_case_004 () =
     Gamma.(Helpers.k_set [ "a", star ] + empty)
     |- (v "a" <*> v "a" <:?> Gamma.star)
   in
-  Alcotest.(check bool) "should reject a a :? *" expected computed
+  Alcotest.(check bool) "should reject a:* |- a a :? *" expected computed
 
 let test_case_005 () =
   let expected = true
@@ -105,7 +105,34 @@ let test_case_012 () =
     |- (mu "x" (v "b" <*> v "x") <:?> Gamma.star)
   in
   Alcotest.(check bool)
-    "should accept mu (x).(b x) :? * with b:*->*" expected computed
+    "should accept b:*->* |- mu (x).(b x) :? *" expected computed
+
+let test_case_013 () =
+  let expected = true
+  and computed =
+    Gamma.(Helpers.k_set [ "b", trait [ "n", star ] ])
+    |- (v "b" @ "n" <:?> Gamma.star)
+  in
+  Alcotest.(check bool)
+    "should accept b=trait { n:* } |- b.n:*" expected computed
+
+let test_case_014 () =
+  let expected = true
+  and computed =
+    Gamma.(Helpers.k_set [ "b", trait [ "n", star; "m", star ] ])
+    |- (v "b" @ "n" <:?> Gamma.star)
+  in
+  Alcotest.(check bool)
+    "should accept b=trait { n:*, m:* } |- b.n:*" expected computed
+
+let test_case_015 () =
+  let expected = false
+  and computed =
+    Gamma.(Helpers.k_set [ "b", trait [ "m", star ] ])
+    |- (v "b" @ "n" <:?> Gamma.star)
+  in
+  Alcotest.(check bool)
+    "should reject b=trait { m:* } |- b.n:*" expected computed
 
 let test_cases =
   let open Alcotest in
@@ -114,8 +141,8 @@ let test_cases =
       test_case "Accept a :? *" `Quick test_case_000
     ; test_case "Accept a -> a :? *" `Quick test_case_001
     ; test_case "Accept a @> a :? *" `Quick test_case_002
-    ; test_case "Accept a a :? * with a:*->*" `Quick test_case_003
-    ; test_case "Reject a a :? * with a:*" `Quick test_case_004
+    ; test_case "Accept a:*->* |- a a :? *" `Quick test_case_003
+    ; test_case "Reject a:* |- a a :? *" `Quick test_case_004
     ; test_case "Accept a.n :? {n:*}" `Quick test_case_005
     ; test_case "Accept a | b :? *" `Quick test_case_006
     ; test_case "Accept forall (x:*).b :? *->*" `Quick test_case_007
@@ -123,5 +150,8 @@ let test_cases =
     ; test_case "Accept exists (x:*).b :? *" `Quick test_case_009
     ; test_case "Reject exists (x:*).b :? *->*" `Quick test_case_010
     ; test_case "Accept mu (x).x :? *" `Quick test_case_011
-    ; test_case "Accept mu (x).(b x) :? * with b:*->*" `Quick test_case_012
+    ; test_case "Accept b:*->* |- mu (x).(b x) :? *" `Quick test_case_012
+    ; test_case "Accept b=trait { n : * } |- b.n:*" `Quick test_case_013
+    ; test_case "Accept b=trait { n : *, m:* } |- b.n:*" `Quick test_case_014
+    ; test_case "Reject b=trait { m:* } |- b.n:*" `Quick test_case_015
     ] )

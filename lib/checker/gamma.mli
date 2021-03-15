@@ -25,3 +25,6 @@ val empty : 'a Type.gamma
 val merge : 'a Type.gamma -> 'a Type.gamma -> 'a Type.gamma
 
 val ( + ) : 'a Type.gamma -> 'a Type.gamma -> 'a Type.gamma
+
+val ( <? ) :
+  'a Type.dictionary -> 'a Type.dictionary -> ('a -> 'a -> bool) -> bool
