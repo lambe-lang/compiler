@@ -8,9 +8,9 @@ let test_case_001 () =
   Alcotest.(check bool) "should accept * <? *" expected computed
 
 let test_case_002 () =
-  let expected = true
+  let expected = false
   and computed = star |-> star <? star in
-  Alcotest.(check bool) "should accept * -> * <? *" expected computed
+  Alcotest.(check bool) "should reject * -> * <? *" expected computed
 
 let test_case_003 () =
   let expected = false
@@ -40,15 +40,24 @@ let test_case_007 () =
   Alcotest.(check bool)
     "should accept {n:*} -> * <? {n:*,m:*} -> *" expected computed
 
+let test_case_008 () =
+  let expected = false
+  and computed =
+    trait [ "n", star; "m", star ] |-> star <? (trait [ "n", star ] |-> star)
+  in
+  Alcotest.(check bool)
+    "should reject {n:*,m:*} -> * <? {n:*} -> *" expected computed
+
 let test_cases =
   let open Alcotest in
   ( "Kind subsume"
   , [
       test_case "Accept * < *" `Quick test_case_001
-    ; test_case "Accept * -> * < *" `Quick test_case_002
+    ; test_case "Reject * -> * < *" `Quick test_case_002
     ; test_case "Reject * < * -> *" `Quick test_case_003
     ; test_case "Accept {..} < *" `Quick test_case_004
     ; test_case "Accept {n:*,m:*} < {n:*}" `Quick test_case_005
     ; test_case "Reject {n:*} < {n:*,m:*}" `Quick test_case_006
     ; test_case "Accept {n:*} -> * < {n:*,m:*} -> *" `Quick test_case_007
+    ; test_case "Reject {n:*,m:*} -> * < {n:*} -> *" `Quick test_case_008
     ] )

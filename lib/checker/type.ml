@@ -52,11 +52,11 @@ module Checker = struct
   and synthetize g t =
     let module K = Lambe_ast.Kind in
     let open Lambe_ast.Type in
-    let open Gamma in
+    let open Kind.Checker.Operator in
     let open List in
     match t with
     | Variable (n, _) -> (
-      match find_opt (fun (m, _) -> n = m) (Helpers.k_get g) with
+      match find_opt (fun (m, _) -> n = m) Gamma.Helpers.(k_get g) with
       | Some (_, k') -> Some k'
       | _ -> None )
     | Arrow (_, _, s) -> Some (K.Type s)
@@ -73,25 +73,26 @@ module Checker = struct
         | None -> None )
       | _ -> None )
     | Union (t1, t2, _) -> (
-      match synthetize g t1 with
-      | Some k -> if check g t2 k then Some k else None
-      | None -> None )
+      match synthetize g t1, synthetize g t2 with
+      | Some k1, Some k2 ->
+        if k1 <? k2 then Some k2 else if k2 <? k1 then Some k1 else None
+      | _ -> None )
     | Forall (n, k, t, s) -> (
-      let g = Helpers.k_set [ n, k ] + g in
+      let g = Gamma.(Helpers.k_set [ n, k ] + g) in
       match synthetize g t with
       | Some k' -> Some (K.Arrow (k, k', s))
       | None -> None )
     | Exists (n, k, t, _) ->
-      let g = Helpers.k_set [ n, k ] + g in
+      let g = Gamma.(Helpers.k_set [ n, k ] + g) in
       synthetize g t
     | Rec (n, t, s) ->
-      let g = Helpers.k_set [ n, K.Type s ] + g in
+      let g = Gamma.(Helpers.k_set [ n, K.Type s ] + g) in
       synthetize g t
     | Const (_, _, s) -> if check g t (K.Type s) then Some (K.Type s) else None
     | Trait ((Gamma (k, t, s, w) as g), l) ->
       if for_all (fun (_, t) -> check g t (K.Type l)) t
          && for_all (fun (_, t) -> check g t (K.Type l)) s
-         && for_all (fun g -> check empty (Trait (g, l)) (K.Type l)) w
+         && for_all (fun g -> check Gamma.empty (Trait (g, l)) (K.Type l)) w
       then
         Some (K.Trait (fold_left (fun k (Gamma (k', _, _, _)) -> k @ k') k w, l))
       else None

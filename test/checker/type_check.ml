@@ -29,10 +29,10 @@ let test_case_002 () =
 let test_case_003 () =
   let expected = true
   and computed =
-    Gamma.(Helpers.k_set [ "a", star |-> star ] + empty)
-    |- (v "a" <*> v "a" <:?> Gamma.star)
+    Gamma.(Helpers.k_set [ "a", star |-> star; "b", star ] + empty)
+    |- (v "a" <*> v "b" <:?> Gamma.star)
   in
-  Alcotest.(check bool) "should accept a:*->* |- a a :? *" expected computed
+  Alcotest.(check bool) "should accept a b :? *" expected computed
 
 let test_case_004 () =
   let expected = false
@@ -67,12 +67,12 @@ let test_case_007 () =
   Alcotest.(check bool) "should accept forall (x:*).b :? *->*" expected computed
 
 let test_case_008 () =
-  let expected = true
+  let expected = false
   and computed =
     Gamma.(Helpers.k_set [ "b", star ] + empty)
     |- (forall ("x", Gamma.star) (v "b") <:?> Gamma.star)
   in
-  Alcotest.(check bool) "should accept forall (x:*).b :? *" expected computed
+  Alcotest.(check bool) "should reject forall (x:*).b :? *" expected computed
 
 let test_case_009 () =
   let expected = true
@@ -141,12 +141,12 @@ let test_cases =
       test_case "Accept a :? *" `Quick test_case_000
     ; test_case "Accept a -> a :? *" `Quick test_case_001
     ; test_case "Accept a @> a :? *" `Quick test_case_002
-    ; test_case "Accept a:*->* |- a a :? *" `Quick test_case_003
+    ; test_case "Accept a b :? *" `Quick test_case_003
     ; test_case "Reject a:* |- a a :? *" `Quick test_case_004
     ; test_case "Accept a.n :? {n:*}" `Quick test_case_005
     ; test_case "Accept a | b :? *" `Quick test_case_006
     ; test_case "Accept forall (x:*).b :? *->*" `Quick test_case_007
-    ; test_case "Accept forall (x:*).b :? *" `Quick test_case_008
+    ; test_case "Reject forall (x:*).b :? *" `Quick test_case_008
     ; test_case "Accept exists (x:*).b :? *" `Quick test_case_009
     ; test_case "Reject exists (x:*).b :? *->*" `Quick test_case_010
     ; test_case "Accept mu (x).x :? *" `Quick test_case_011

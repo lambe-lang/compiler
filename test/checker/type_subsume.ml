@@ -132,7 +132,7 @@ let test_case_013 () =
     "should accept forall(x:*).x -> a <? forall(y:*).y -> a" expected computed
 
 let test_case_014 () =
-  let expected = true
+  let expected = false
   and computed, _ =
     Gamma.(Helpers.k_set [ "a", star ] + empty)
     |- ( forall ("x", Gamma.(star |-> star)) (v "x" |-> v "a")
@@ -140,7 +140,7 @@ let test_case_014 () =
          Variables.create
   in
   Alcotest.(check bool)
-    "should accept forall(x:*->*).x -> a <? forall(y:*).y -> a" expected
+    "should reject forall(x:*->*).x -> a <? forall(y:*).y -> a" expected
     computed
 
 let test_case_015 () =
@@ -167,19 +167,19 @@ let test_case_016 () =
     "should accept exists(x:*).x -> a <? exists(y:*).y -> a" expected computed
 
 let test_case_017 () =
-  let expected = true
+  let expected = false
   and computed, _ =
     Gamma.(Helpers.k_set [ "a", star ] + empty)
-    |- ( exists ("x", Gamma.(star |-> star)) (v "x" |-> v "a")
-       <? exists ("y", Gamma.star) (v "y" |-> v "a") )
+    |- ( exists ("x", Gamma.star) (v "x" |-> v "a")
+       <? exists ("y", Gamma.(star |-> star)) (v "y" |-> v "a") )
          Variables.create
   in
   Alcotest.(check bool)
-    "should accept exists(x:*->*).x -> a <? exists(y:*).y -> a" expected
+    "should reject exists(x:*).x -> a <? exists(y:*->*).y -> a" expected
     computed
 
 let test_case_018 () =
-  let expected = true
+  let expected = false
   and computed, _ =
     Gamma.(Helpers.k_set [ "a", star ] + empty)
     |- ( exists ("x", Gamma.(star |-> star)) (v "x" |-> v "a")
@@ -187,7 +187,7 @@ let test_case_018 () =
          Variables.create
   in
   Alcotest.(check bool)
-    "should accept exists(x:*->*).x -> a <? exists(y:*).y -> a" expected
+    "should reject exists(x:*->*).x -> a <? exists(y:*).y -> a" expected
     computed
 
 let test_case_019 () =
@@ -317,15 +317,15 @@ let test_cases =
     ; test_case "Accept mu(y).a -> y <? mu(x).a -> x" `Quick test_case_012
     ; test_case "Accept forall(x:*).x -> a <? forall(y:*).y -> a" `Quick
         test_case_013
-    ; test_case "Accept forall(x:*->*).x -> a <? forall(y:*).y -> a" `Quick
+    ; test_case "Reject forall(x:*->*).x -> a <? forall(y:*).y -> a" `Quick
         test_case_014
     ; test_case "Reject forall(x:*).x -> a <? forall(y:*->*).y -> a" `Quick
         test_case_015
     ; test_case "Accept exists(x:*).x -> a <? exists(y:*).y -> a" `Quick
         test_case_016
-    ; test_case "Accept exists(x:*->*).x -> a <? exists(y:*).y -> a" `Quick
-        test_case_017
     ; test_case "Reject exists(x:*).x -> a <? exists(y:*->*).y -> a" `Quick
+        test_case_017
+    ; test_case "Reject exists(x:*->*).x -> a <? exists(y:*).y -> a" `Quick
         test_case_018
     ; test_case "Accept (forall(x:*).x) a <? a" `Quick test_case_019
     ; test_case "Accept a <? (forall(x:*).x) a" `Quick test_case_020
