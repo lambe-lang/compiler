@@ -1,30 +1,41 @@
-open Lambe_ast
-
 module Monoid : sig
-  val neutral : 'a Type.gamma
+  val neutral : 'a Lambe_ast.Type.gamma
 
-  val combine : 'a Type.gamma -> 'a Type.gamma -> 'a Type.gamma
+  val combine :
+       'a Lambe_ast.Type.gamma
+    -> 'a Lambe_ast.Type.gamma
+    -> 'a Lambe_ast.Type.gamma
 end
 
 module Helpers : sig
-  val k_get : 'a Type.gamma -> 'a Kind.t Type.dictionary
+  val k_get :
+    'a Lambe_ast.Type.gamma -> 'a Lambe_ast.Kind.t Lambe_ast.Type.dictionary
 
-  val k_set : 'a Kind.t Type.dictionary -> 'a Type.gamma
+  val k_set :
+    'a Lambe_ast.Kind.t Lambe_ast.Type.dictionary -> 'a Lambe_ast.Type.gamma
 
-  val t_get : 'a Type.gamma -> 'a Type.t Type.dictionary
+  val t_get :
+    'a Lambe_ast.Type.gamma -> 'a Lambe_ast.Type.t Lambe_ast.Type.dictionary
 
-  val t_set : 'a Type.t Type.dictionary -> 'a Type.gamma
+  val t_set :
+    'a Lambe_ast.Type.t Lambe_ast.Type.dictionary -> 'a Lambe_ast.Type.gamma
 
-  val s_get : 'a Type.gamma -> 'a Type.t Type.dictionary
+  val s_get :
+    'a Lambe_ast.Type.gamma -> 'a Lambe_ast.Type.t Lambe_ast.Type.dictionary
 
-  val w_get : 'a Type.gamma -> 'a Type.gamma list
+  val w_get : 'a Lambe_ast.Type.gamma -> 'a Lambe_ast.Type.gamma list
 end
 
-val empty : 'a Type.gamma
+val empty : 'a Lambe_ast.Type.gamma
 
-val merge : 'a Type.gamma -> 'a Type.gamma -> 'a Type.gamma
+val merge :
+  'a Lambe_ast.Type.gamma -> 'a Lambe_ast.Type.gamma -> 'a Lambe_ast.Type.gamma
 
-val ( + ) : 'a Type.gamma -> 'a Type.gamma -> 'a Type.gamma
+val ( + ) :
+  'a Lambe_ast.Type.gamma -> 'a Lambe_ast.Type.gamma -> 'a Lambe_ast.Type.gamma
 
 val ( <? ) :
-  'a Type.dictionary -> 'a Type.dictionary -> ('a -> 'a -> bool) -> bool
+     'a Lambe_ast.Type.dictionary
+  -> 'a Lambe_ast.Type.dictionary
+  -> ('a -> 'a -> bool)
+  -> bool

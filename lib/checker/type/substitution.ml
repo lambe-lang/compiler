@@ -85,11 +85,11 @@ end
     Γ⊢cSI :κ k
 
     Γ′ = ⟨K,T,S,W⟩
-    ∀(_,t) ∈ T, Γ′ ⊢t:κ ⋆
-    ∀(_,s) ∈ S, Γ′ ⊢s:κ ⋆
+    ∀(_,t) ∈ T, Γ′ ⊢ t:κ ⋆
+    ∀(_,s) ∈ S, Γ′ ⊢ s:κ ⋆
     ∀w ∈ W, Γ∅ ⊢ w:κ ⋆
-    ----------------------------
-    Γ ⊢ ⟨K,T,S,W⟩:κ K∪􏰃w∈W K↓[w])
+    -------------------------------
+    Γ ⊢ ⟨K,T,S,W⟩:κ K ∪ w∈W K↓[w])
 
 *)
 
@@ -148,6 +148,24 @@ module Checker = struct
         Some (K.Trait (fold_left (fun k (Gamma (k', _, _, _)) -> k @ k') k w, l))
       else None
 
+   let rec reduce g t =
+   match t with
+   | Variable (n,_) -> (
+      match find_opt (fun (m, _) -> n = m) (Helpers.t_get g) with
+      | Some (_, t1) -> Some t1
+      | _ -> None )
+   | Apply(t1,t2,l) -> (
+      match reduce gamma t1 with
+      | Forall(a1, k1, t1, _) ->
+        if check g t2 k
+        then Some (substitute a1 t2 t1)
+        else None )
+   | Acces(t1,t2,l) -> (
+      match reduce gamma t1 with
+      | Trait (g', _) ->
+        find_opt (fun (m, _) -> n = m) (Helpers.t_get g')
+   | _ -> Some t
+
   (* Should return a State *)
   let rec subsume g t1 t2 v =
     let module K = Lambe_ast.Kind in
@@ -168,43 +186,25 @@ module Checker = struct
         | None -> find_type n l )
     in
     match t1, t2 with
-    | _ when t1 = t2 -> check g t1 (K.Type (TypeContext.get t1)), v
+    | _ when t1 = t2 -> check g t1 (K.Type (TypeContext.get t1)), v (* ? *)
     (* Apply section *)
-    | t, Apply (Forall (a1, _, t1, _), t2, _) ->
-      subsume g t (substitute a1 t2 t1) v
-    | Apply (Forall (a1, _, t1, _), t2, _), t ->
-      subsume g (substitute a1 t2 t1) t v
-    | t, Apply (Variable (n, _), t2, s) -> (
-      match find_opt (fun (m, _) -> n = m) (Helpers.t_get g) with
-      | Some (_, t1) -> subsume g t (Apply (t1, t2, s)) v
+    | _, Apply (_, _, _) -> (
+      match reduce g t2 with
+      | Some t2 -> subsume g t1 t2 v
       | _ -> false, v )
-    | Apply (Variable (n, _), t2, s), t -> (
-      match find_opt (fun (m, _) -> n = m) (Helpers.t_get g) with
-      | Some (_, t1) -> subsume g (Apply (t1, t2, s)) t v
+    | Apply (_, _, _), _ ->
+      match reduce g t1 t2 with
+      | Some t1 -> subsume g t1 t2 v
       | _ -> false, v )
     (* Access Section *)
-    | t, Access (Trait (g', _), n, _) -> (
-      match find_opt (fun (m, _) -> n = m) (Helpers.t_get g') with
-      | Some (_, t2) -> subsume g t t2 v
-      | _ -> (
-        match find_type n (Helpers.w_get g') with
-        | Some (_, t2) -> subsume g t t2 v
-        | None -> false, v ) )
-    | Access (Trait (g', _), n, _), t -> (
-      match find_opt (fun (m, _) -> n = m) (Helpers.t_get g') with
-      | Some (_, t1) -> subsume g t1 t v
-      | _ -> (
-        match find_type n (Helpers.w_get g') with
-        | Some (_, t1) -> subsume g t1 t v
-        | None -> false, v ) )
-    | t, Access (Variable (n, _), m, s) -> (
-      match find_opt (fun (m, _) -> n = m) (Helpers.t_get g) with
-      | Some (_, t1) -> subsume g t (Access (t1, m, s)) v
+    | _, Access (_, _, _) -> (
+      match reduce g t2 with
+      | Some t2 -> subsume g t1 t2 v
       | _ -> false, v )
-    | Access (Variable (n, _), m, s), t -> (
-      match find_opt (fun (m, _) -> n = m) (Helpers.t_get g) with
-      | Some (_, t1) -> subsume g (Access (t1, m, s)) t v
-      | _ -> false, v )
+    | Access (_, _, _), _ -> (
+      match reduce g t1 with
+      | Some t1 -> subsume g t1 t2 v
+      | _ -> false, v)
     (* Arrow *)
     | Arrow (t1, t2, _), Arrow (t3, t4, _) ->
       let b1, v1 = subsume g t3 t1 v in

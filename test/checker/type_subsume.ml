@@ -296,6 +296,28 @@ let test_case_029 () =
   Alcotest.(check bool)
     "should reject b=trait { type m = a } |- a <? b.n" expected computed
 
+let test_case_030 () =
+  let expected = true
+  and computed, _ =
+    Gamma.(Helpers.k_set [ "a", star ] + empty)
+    |- ( forall ("x", Gamma.(trait [ "n", star ])) (v "x")
+       <? forall ("y", Gamma.(trait [ "n", star; "m", star ])) (v "y") )
+         Variables.create
+  in
+  Alcotest.(check bool)
+    "should accept forall(x:{n:a}).x <? forall(y:{n:a,m:a).y" expected computed
+
+let test_case_031 () =
+  let expected = false
+  and computed, _ =
+    Gamma.(Helpers.k_set [ "a", star ] + empty)
+    |- ( forall ("x", Gamma.(trait [ "n", star; "m", star ])) (v "x")
+       <? forall ("y", Gamma.(trait [ "n", star ])) (v "y") )
+         Variables.create
+  in
+  Alcotest.(check bool)
+    "should reject forall(x:{n:a,m:a}).x <? forall(y:{n:a).y" expected computed
+
 let test_cases =
   let open Alcotest in
   ( "Type subsume"
@@ -341,4 +363,8 @@ let test_cases =
         test_case_028
     ; test_case "Reject b=trait with { type m = a } |- a <? b.n" `Quick
         test_case_029
+    ; test_case "Accept forall(x:{n:*}).x <? forall(y:{n:*,m:*).y" `Quick
+        test_case_030
+    ; test_case "Reject forall(x:{n:*,m=*}).x <? forall(y:{n:*).y" `Quick
+        test_case_031
     ] )

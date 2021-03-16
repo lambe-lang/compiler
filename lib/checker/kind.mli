@@ -1,9 +1,7 @@
-open Lambe_ast
-
 module Checker : sig
-  val subsume : 'a Kind.t -> 'a Kind.t -> bool
+  val subsume : 'a Lambe_ast.Kind.t -> 'a Lambe_ast.Kind.t -> bool
 
   module Operator : sig
-    val ( <? ) : 'a Kind.t -> 'a Kind.t -> bool
+    val ( <? ) : 'a Lambe_ast.Kind.t -> 'a Lambe_ast.Kind.t -> bool
   end
 end
