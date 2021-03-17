@@ -107,34 +107,30 @@ module Checker = struct
     let open Lambe_ast.Type in
     let open Kind.Checker.Operator in
     let open List in
+    let ( >>= ) ma f = Option.bind ma f in
+    let ( <*> ) f ma = Option.map f ma in
     match t with
-    | Variable (n, _) -> (
-      match find_opt (fun (m, _) -> n = m) Gamma.Helpers.(k_get g) with
-      | Some (_, k') -> Some k'
-      | _ -> None )
+    | Variable (n, _) ->
+      snd <*> find_opt (fun (m, _) -> n = m) Gamma.Helpers.(k_get g)
     | Arrow (_, _, s) -> Some (K.Type s)
     | Invoke (_, _, s) -> Some (K.Type s)
     | Apply (t1, t2, _) -> (
-      match synthetize g t1 with
-      | Some (K.Arrow (k', k, _)) -> if check g t2 k' then Some k else None
-      | _ -> None )
+      synthetize g t1
+      >>= function
+      | K.Arrow (k', k, _) -> if check g t2 k' then Some k else None | _ -> None
+      )
     | Access (t1, n, _) -> (
-      match synthetize g t1 with
-      | Some (Trait (l, _)) -> (
-        match find_opt (fun (m, _) -> n = m) l with
-        | Some (_, k) -> Some k
-        | None -> None )
-      | _ -> None )
+      synthetize g t1
+      >>= function
+      | Trait (l, _) -> snd <*> find_opt (fun (m, _) -> n = m) l | _ -> None )
     | Union (t1, t2, _) -> (
       match synthetize g t1, synthetize g t2 with
       | Some k1, Some k2 ->
         if k1 <? k2 then Some k2 else if k2 <? k1 then Some k1 else None
       | _ -> None )
-    | Lambda (n, k, t, s) -> (
+    | Lambda (n, k, t, s) ->
       let g = Gamma.(Helpers.k_set [ n, k ] + g) in
-      match synthetize g t with
-      | Some k' -> Some (K.Arrow (k, k', s))
-      | None -> None )
+      (fun k' -> K.Arrow (k, k', s)) <*> synthetize g t
     | Forall (n, k, t, _) ->
       let g = Gamma.(Helpers.k_set [ n, k ] + g) in
       synthetize g t
@@ -158,6 +154,8 @@ module Checker = struct
     let open Gamma in
     let open Substitution in
     let open List in
+    let ( >>= ) ma f = Option.bind ma f in
+    let ( <*> ) f ma = Option.map f ma in
     let rec find_type n = function
       | [] -> None
       | Gamma (_, t, _, _) :: l -> (
@@ -167,21 +165,20 @@ module Checker = struct
     in
     match t with
     | Variable (n, _) ->
-      Option.map snd (find_opt (fun (m, _) -> n = m) (Helpers.t_get g))
+      snd <*> find_opt (fun (m, _) -> n = m) (Helpers.t_get g)
     | Apply (t1, t2, _) -> (
-      match reduce g t1 with
-      | Some (Lambda (a1, k1, t1, _)) ->
+      reduce g t1
+      >>= function
+      | Lambda (a1, k1, t1, _) ->
         if check g t2 k1 then Some (substitute a1 t2 t1) else None
       | _ -> None )
     | Access (t, n, _) -> (
-      match reduce g t with
-      | Some (Trait (g, _)) -> (
+      reduce g t
+      >>= function
+      | Trait (g, _) -> (
         match find_opt (fun (m, _) -> n = m) (Helpers.t_get g) with
         | Some (_, t) -> Some t
-        | None -> (
-          match find_type n (Helpers.w_get g) with
-          | Some (_, t) -> Some t
-          | None -> None ) )
+        | None -> snd <*> find_type n (Helpers.w_get g) )
       | _ -> None )
     | _ -> Some t
 
