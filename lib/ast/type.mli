@@ -9,6 +9,7 @@ Type and environment definition
   | τ􏰀 @> τ
   | τ τ
   | τ + τ
+  | Λ(α : κ).τ
   | ∀(α : κ).τ
   | ∃(α : κ).τ
   | μ(α).τ
@@ -34,14 +35,15 @@ type 'a t =
   | Variable of var * 'a
   | Arrow of 'a t * 'a t * 'a
   | Invoke of 'a t * 'a t * 'a
-  | Apply of 'a t * 'a t * 'a
-  | Access of 'a t * id * 'a
   | Union of 'a t * 'a t * 'a
+  | Apply of 'a t * 'a t * 'a
+  | Lambda of var * 'a Kind.t * 'a t * 'a
   | Forall of var * 'a Kind.t * 'a t * 'a
   | Exists of var * 'a Kind.t * 'a t * 'a
   | Rec of var * 'a t * 'a
   | Const of id * 'a t dictionary * 'a
   | Trait of 'a gamma * 'a
+  | Access of 'a t * id * 'a
 
 and 'a gamma =
   | Gamma of

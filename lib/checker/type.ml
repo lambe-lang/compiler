@@ -8,6 +8,7 @@ module TypeContext = struct
     | Apply (_, _, s) -> s
     | Access (_, _, s) -> s
     | Union (_, _, s) -> s
+    | Lambda (_, _, _, s) -> s
     | Forall (_, _, _, s) -> s
     | Exists (_, _, _, s) -> s
     | Rec (_, _, s) -> s
@@ -32,6 +33,8 @@ module Substitution = struct
     | Apply (t1, t2, s) -> Apply (substitute v r t1, substitute v r t2, s)
     | Access (t1, n, s) -> Access (substitute v r t1, n, s)
     | Union (t1, t2, s) -> Union (substitute v r t1, substitute v r t2, s)
+    | Lambda (a, _, _, _) when a = v -> t
+    | Lambda (a, k, t1, s) -> Lambda (a, k, substitute v r t1, s)
     | Forall (a, _, _, _) when a = v -> t
     | Forall (a, k, t1, s) -> Forall (a, k, substitute v r t1, s)
     | Exists (a, _, _, _) when a = v -> t
@@ -44,53 +47,52 @@ end
 
 (*
 
-    K↓[Γ][t] = k′ k ⊆κ k′
+    K↓[Γ][n] = k' k' ⊆κ k
     ---------------------
-    Γ ⊢ t :κ k
+    Γ ⊢ n :κ k
 
     Γ ⊢ t1 :κ ⋆   Γ⊢t2 :κ ⋆
     ------------------------
-    Γ ⊢ t1 →t2 :κ ⋆
+    Γ ⊢ t1 → t2 :κ ⋆
 
     Γ ⊢ t1 :κ ⋆   Γ ⊢ t2 :κ ⋆
     --------------------------
-    Γ ⊢ t1 􏰀t2 :κ ⋆
+    Γ ⊢ t1 + t2 :κ ⋆
 
     Γ ⊢ t1 :κ k′ → k   Γ ⊢ t2 :κ k′
     --------------------------------
     Γ ⊢ t1 t2 :κ k
 
-    Γ ⊢ t1 :κ {n : k}
-    -----------------
-    Γ ⊢ t1.n:κ k
-
-    Γ ⊢ t1 :κ k   Γ ⊢ t2 :κ k
-    --------------------------
-    Γ ⊢ t1 + t2 :κ k
-
     k1 ⊆κ k   Γ⊕K↑[{a:k}]⊢t:κ k2
     ----------------------------
-    Γ ⊢ ∀(a:k).t:κ k1 →k2
+    Γ ⊢ Λ(a:k).t:κ k1 → k2
 
-    Γ⊕K↑[{a:k}] ⊢ t:κ k′
-    --------------------
+    k1 ⊆κ k   Γ⊕K↑[{a:k}]⊢t :κ k2
+    ----------------------------
+    Γ ⊢ ∀(a:k).t :κ k1 → k2
+
+    Γ⊕K↑[{a:k}] ⊢ t :κ k′
+    ---------------------
     Γ ⊢ ∃(a : k).t :κ k′
 
-    Γ⊕K↑[{a:⋆}] ⊢ t:κ k
-    --------------------
-    Γ ⊢ μ(a).t :κ k
-
-    ∀i ∈ I,Γ ⊢ S[mi] : k
+    Γ⊕K↑[{a:⋆}] ⊢ t :κ ⋆
     ---------------------
-    Γ⊢cSI :κ k
+    Γ ⊢ μ(a).t :κ ⋆
 
-    Γ′ = ⟨K,T,S,W⟩
-    ∀(_,t) ∈ T, Γ′ ⊢t:κ ⋆
+    ∀i ∈ I,Γ ⊢ S[mi] :κ ⋆
+    ---------------------
+    Γ⊢ cSI :κ ⋆
+
+    Γ′ = ⟨K,T,S,W⟩   K ⊆κ K'
+    ∀(n,t) ∈ T, Γ′ ⊢t:κ K[n]
     ∀(_,s) ∈ S, Γ′ ⊢s:κ ⋆
     ∀w ∈ W, Γ∅ ⊢ w:κ ⋆
     ----------------------------
-    Γ ⊢ ⟨K,T,S,W⟩:κ K∪􏰃w∈W K↓[w])
+    Γ ⊢ ⟨K,T,S,W⟩:κ K'
 
+    Γ ⊢ t1 :κ {n : k}
+    -----------------
+    Γ ⊢ t1.n:κ k
 *)
 
 module Checker = struct
@@ -128,11 +130,14 @@ module Checker = struct
       | Some k1, Some k2 ->
         if k1 <? k2 then Some k2 else if k2 <? k1 then Some k1 else None
       | _ -> None )
-    | Forall (n, k, t, s) -> (
+    | Lambda (n, k, t, s) -> (
       let g = Gamma.(Helpers.k_set [ n, k ] + g) in
       match synthetize g t with
       | Some k' -> Some (K.Arrow (k, k', s))
       | None -> None )
+    | Forall (n, k, t, _) ->
+      let g = Gamma.(Helpers.k_set [ n, k ] + g) in
+      synthetize g t
     | Exists (n, k, t, _) ->
       let g = Gamma.(Helpers.k_set [ n, k ] + g) in
       synthetize g t
@@ -148,6 +153,38 @@ module Checker = struct
         Some (K.Trait (fold_left (fun k (Gamma (k', _, _, _)) -> k @ k') k w, l))
       else None
 
+  let rec reduce g t =
+    let open Lambe_ast.Type in
+    let open Gamma in
+    let open Substitution in
+    let open List in
+    let rec find_type n = function
+      | [] -> None
+      | Gamma (_, t, _, _) :: l -> (
+        match find_opt (fun (m, _) -> n = m) t with
+        | Some t -> Some t
+        | None -> find_type n l )
+    in
+    match t with
+    | Variable (n, _) ->
+      Option.map snd (find_opt (fun (m, _) -> n = m) (Helpers.t_get g))
+    | Apply (t1, t2, _) -> (
+      match reduce g t1 with
+      | Some (Lambda (a1, k1, t1, _)) ->
+        if check g t2 k1 then Some (substitute a1 t2 t1) else None
+      | _ -> None )
+    | Access (t, n, _) -> (
+      match reduce g t with
+      | Some (Trait (g, _)) -> (
+        match find_opt (fun (m, _) -> n = m) (Helpers.t_get g) with
+        | Some (_, t) -> Some t
+        | None -> (
+          match find_type n (Helpers.w_get g) with
+          | Some (_, t) -> Some t
+          | None -> None ) )
+      | _ -> None )
+    | _ -> Some t
+
   (* Should return a State *)
   let rec subsume g t1 t2 v =
     let module K = Lambe_ast.Kind in
@@ -160,13 +197,6 @@ module Checker = struct
     let print_subtype = Lambe_render.Type.Render.subtype Format.err_formatter in
     let _ = print_subtype t1 t2
     and _ = print_string "\n" in
-    let rec find_type n = function
-      | [] -> None
-      | Gamma (_, t, _, _) :: l -> (
-        match find_opt (fun (m, _) -> n = m) t with
-        | Some t -> Some t
-        | None -> find_type n l )
-    in
     match t1, t2 with
     | _ when t1 = t2 -> check g t1 (K.Type (TypeContext.get t1)), v
     (* Apply section *)
@@ -174,37 +204,6 @@ module Checker = struct
       subsume g t (substitute a1 t2 t1) v
     | Apply (Forall (a1, _, t1, _), t2, _), t ->
       subsume g (substitute a1 t2 t1) t v
-    | t, Apply (Variable (n, _), t2, s) -> (
-      match find_opt (fun (m, _) -> n = m) (Helpers.t_get g) with
-      | Some (_, t1) -> subsume g t (Apply (t1, t2, s)) v
-      | _ -> false, v )
-    | Apply (Variable (n, _), t2, s), t -> (
-      match find_opt (fun (m, _) -> n = m) (Helpers.t_get g) with
-      | Some (_, t1) -> subsume g (Apply (t1, t2, s)) t v
-      | _ -> false, v )
-    (* Access Section *)
-    | t, Access (Trait (g', _), n, _) -> (
-      match find_opt (fun (m, _) -> n = m) (Helpers.t_get g') with
-      | Some (_, t2) -> subsume g t t2 v
-      | _ -> (
-        match find_type n (Helpers.w_get g') with
-        | Some (_, t2) -> subsume g t t2 v
-        | None -> false, v ) )
-    | Access (Trait (g', _), n, _), t -> (
-      match find_opt (fun (m, _) -> n = m) (Helpers.t_get g') with
-      | Some (_, t1) -> subsume g t1 t v
-      | _ -> (
-        match find_type n (Helpers.w_get g') with
-        | Some (_, t1) -> subsume g t1 t v
-        | None -> false, v ) )
-    | t, Access (Variable (n, _), m, s) -> (
-      match find_opt (fun (m, _) -> n = m) (Helpers.t_get g) with
-      | Some (_, t1) -> subsume g t (Access (t1, m, s)) v
-      | _ -> false, v )
-    | Access (Variable (n, _), m, s), t -> (
-      match find_opt (fun (m, _) -> n = m) (Helpers.t_get g) with
-      | Some (_, t1) -> subsume g (Access (t1, m, s)) t v
-      | _ -> false, v )
     (* Arrow *)
     | Arrow (t1, t2, _), Arrow (t3, t4, _) ->
       let b1, v1 = subsume g t3 t1 v in
@@ -270,7 +269,13 @@ module Checker = struct
         && Gamma.(t <? t') (fun t1 t2 -> fst (subsume g t1 t2 v))
         && Gamma.(s <? s') (fun t1 t2 -> fst (subsume g t1 t2 v))
       , v )
-    | _ -> false, v
+    | t1, t2 -> (
+      match reduce g t1 with
+      | Some t1' when t1' != t1 -> subsume g t1' t2 v
+      | _ -> (
+        match reduce g t2 with
+        | Some t2' when t2' != t2 -> subsume g t1 t2' v
+        | _ -> false, v ) )
 
   module Operator = struct
     let ( <:?> ) t1 t2 g = check g t1 t2

@@ -23,6 +23,8 @@ module Types = struct
 
   let ( @ ) t n = Type.Access (t, n, ())
 
+  let lambda (n, k) t = Type.Lambda (n, k, t, ())
+
   let forall (n, k) t = Type.Forall (n, k, t, ())
 
   let exists (n, k) t = Type.Exists (n, k, t, ())
