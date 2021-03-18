@@ -1,4 +1,4 @@
 (library
  (name lambe_ast)
  (public_name lambe.ast)
- (modules_without_implementation kind type ast))
+ (modules_without_implementation common kind type expr ast))

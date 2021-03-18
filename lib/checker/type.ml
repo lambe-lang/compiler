@@ -117,16 +117,15 @@ module Checker = struct
     | Apply (t1, t2, _) -> (
       synthetize g t1
       >>= function
-      | K.Arrow (k', k, _) -> if check g t2 k' then Some k else None | _ -> None
-      )
+      | K.Arrow (k', k, _) when check g t2 k' -> Some k | _ -> None )
     | Access (t1, n, _) -> (
       synthetize g t1
       >>= function
       | Trait (l, _) -> snd <*> find_opt (fun (m, _) -> n = m) l | _ -> None )
     | Union (t1, t2, _) -> (
       match synthetize g t1, synthetize g t2 with
-      | Some k1, Some k2 ->
-        if k1 <? k2 then Some k2 else if k2 <? k1 then Some k1 else None
+      | Some k1, Some k2 when k1 <? k2 -> Some k2
+      | Some k1, Some k2 when k2 <? k1 -> Some k1
       | _ -> None )
     | Lambda (n, k, t, s) ->
       let g = Gamma.(Helpers.k_set [ n, k ] + g) in
@@ -141,9 +140,9 @@ module Checker = struct
       let g = Gamma.(Helpers.k_set [ n, K.Type s ] + g) in
       synthetize g t
     | Const (_, _, s) -> if check g t (K.Type s) then Some (K.Type s) else None
-    | Trait ((Gamma (k, t, s, w) as g), l) ->
-      if for_all (fun (_, t) -> check g t (K.Type l)) t
-         && for_all (fun (_, t) -> check g t (K.Type l)) s
+    | Trait ((Gamma (k, t, s, w) as g'), l) ->
+      if for_all (fun (_, t) -> check Gamma.(g + g') t (K.Type l)) t
+         && for_all (fun (_, t) -> check Gamma.(g + g') t (K.Type l)) s
          && for_all (fun g -> check Gamma.empty (Trait (g, l)) (K.Type l)) w
       then
         Some (K.Trait (fold_left (fun k (Gamma (k', _, _, _)) -> k @ k') k w, l))

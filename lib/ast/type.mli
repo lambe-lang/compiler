@@ -25,29 +25,26 @@ M = {mi􏰁εi}I
 
 *)
 
-type 'a dictionary = (string * 'a) list
-
-type id = string
-
-type var = string
-
 type 'a t =
-  | Variable of var * 'a
+  | Variable of Common.var * 'a
   | Arrow of 'a t * 'a t * 'a
   | Invoke of 'a t * 'a t * 'a
   | Union of 'a t * 'a t * 'a
   | Apply of 'a t * 'a t * 'a
-  | Lambda of var * 'a Kind.t * 'a t * 'a
-  | Forall of var * 'a Kind.t * 'a t * 'a
-  | Exists of var * 'a Kind.t * 'a t * 'a
-  | Rec of var * 'a t * 'a
-  | Const of id * 'a t dictionary * 'a
+  | Lambda of Common.var * 'a Kind.t * 'a t * 'a
+  | Forall of Common.var * 'a Kind.t * 'a t * 'a
+  | Exists of Common.var * 'a Kind.t * 'a t * 'a
+  | Rec of Common.var * 'a t * 'a
+  | Const of Common.id * 'a t Common.dictionary * 'a
   | Trait of 'a gamma * 'a
-  | Access of 'a t * id * 'a
+  | Access of 'a t * Common.id * 'a
 
 and 'a gamma =
   | Gamma of
-      'a Kind.t dictionary * 'a t dictionary * 'a t dictionary * 'a gamma list
+      'a Kind.t Common.dictionary
+      * 'a t Common.dictionary
+      * 'a t Common.dictionary
+      * 'a gamma list
 
 (*
    The polymorphic type 'a holds open informations
