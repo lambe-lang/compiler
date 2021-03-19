@@ -23,6 +23,9 @@ module Helpers : sig
   val s_get :
     'a Lambe_ast.Type.gamma -> 'a Lambe_ast.Type.t Lambe_ast.Common.dictionary
 
+  val s_set :
+    'a Lambe_ast.Type.t Lambe_ast.Common.dictionary -> 'a Lambe_ast.Type.gamma
+
   val w_get : 'a Lambe_ast.Type.gamma -> 'a Lambe_ast.Type.gamma list
 end
 

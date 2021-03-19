@@ -1,21 +1,20 @@
 open Lambe_checker.Context
 open Lambe_checker.Gamma
 open Lambe_checker.Type.Checker.Operator
-open Dsl
 open Dsl.Types
+module K = Dsl.Kinds
 
 let test_case_000 () =
   let expected = true
   and computed, _ =
-    Gamma.(Helpers.k_set [ "a", star ] + empty)
-    |- (v "a" <? v "a") Variables.create
+    K.(Helpers.k_set [ "a", star ] + empty) |- (v "a" <? v "a") Variables.create
   in
   Alcotest.(check bool) "should accept a <? a" expected computed
 
 let test_case_001 () =
   let expected = false
   and computed, _ =
-    Gamma.(Helpers.k_set [ "a", star; "b", star ] + empty)
+    K.(Helpers.k_set [ "a", star; "b", star ] + empty)
     |- (v "a" <? v "b") Variables.create
   in
   Alcotest.(check bool) "should accept a <? b" expected computed
@@ -23,7 +22,7 @@ let test_case_001 () =
 let test_case_002 () =
   let expected = true
   and computed, _ =
-    Gamma.(Helpers.k_set [ "a", star; "b", star ] + empty)
+    K.(Helpers.k_set [ "a", star; "b", star ] + empty)
     |- (v "a" <? (v "a" <|> v "b")) Variables.create
   in
   Alcotest.(check bool) "should accept a <? b | a" expected computed
@@ -31,7 +30,7 @@ let test_case_002 () =
 let test_case_003 () =
   let expected = true
   and computed, _ =
-    Gamma.(Helpers.k_set [ "a", star; "b", star ] + empty)
+    K.(Helpers.k_set [ "a", star; "b", star ] + empty)
     |- (v "a" <? (v "b" <|> v "a")) Variables.create
   in
   Alcotest.(check bool) "should accept a <? b | a" expected computed
@@ -39,7 +38,7 @@ let test_case_003 () =
 let test_case_004 () =
   let expected = true
   and computed, _ =
-    Gamma.(Helpers.k_set [ "a", star; "b", star ] + empty)
+    K.(Helpers.k_set [ "a", star; "b", star ] + empty)
     |- (v "b" <|> v "a" |-> v "a" <? (v "a" |-> v "a")) Variables.create
   in
   Alcotest.(check bool) "should accept a | b -> a <? a -> a" expected computed
@@ -47,7 +46,7 @@ let test_case_004 () =
 let test_case_005 () =
   let expected = true
   and computed, _ =
-    Gamma.(Helpers.k_set [ "a", star; "b", star ] + empty)
+    K.(Helpers.k_set [ "a", star; "b", star ] + empty)
     |- (v "b" <|> v "a" |@> v "a" <? (v "a" |@> v "a")) Variables.create
   in
   Alcotest.(check bool) "should accept a | b @-> a <? a @-> a" expected computed
@@ -55,7 +54,7 @@ let test_case_005 () =
 let test_case_006 () =
   let expected = true
   and computed, _ =
-    Gamma.(Helpers.k_set [ "a", star; "b", star ] + empty)
+    K.(Helpers.k_set [ "a", star; "b", star ] + empty)
     |- (v "b" <|> v "a" <? (v "a" <|> v "b")) Variables.create
   in
   Alcotest.(check bool) "should accept a | b <? b | a" expected computed
@@ -63,7 +62,7 @@ let test_case_006 () =
 let test_case_007 () =
   let expected = true
   and computed, _ =
-    Gamma.(Helpers.k_set [ "a", star; "b", star ] + empty)
+    K.(Helpers.k_set [ "a", star; "b", star ] + empty)
     |- ( data "C" [ "h", v "a"; "t", v "b" ]
        <? data "C" [ "t", v "b"; "h", v "a" ] )
          Variables.create
@@ -74,7 +73,7 @@ let test_case_007 () =
 let test_case_008 () =
   let expected = true
   and computed, _ =
-    Gamma.(Helpers.k_set [ "a", star; "b", star ] + empty)
+    K.(Helpers.k_set [ "a", star; "b", star ] + empty)
     |- (data "C" [ "h", v "a"; "t", v "b" ] <? data "C" [ "t", v "b" ])
          Variables.create
   in
@@ -84,7 +83,7 @@ let test_case_008 () =
 let test_case_009 () =
   let expected = false
   and computed, _ =
-    Gamma.(Helpers.k_set [ "a", star; "b", star ] + empty)
+    K.(Helpers.k_set [ "a", star; "b", star ] + empty)
     |- (data "C" [ "t", v "b" ] <? data "C" [ "h", v "a"; "t", v "b" ])
          Variables.create
   in
@@ -94,7 +93,7 @@ let test_case_009 () =
 let test_case_010 () =
   let expected = true
   and computed, _ =
-    Gamma.(Helpers.k_set [ "a", star ] + empty)
+    K.(Helpers.k_set [ "a", star ] + empty)
     |- (mu "x" (v "a" |-> v "x") <? (v "a" |-> mu "x" (v "a" |-> v "x")))
          Variables.create
   in
@@ -104,7 +103,7 @@ let test_case_010 () =
 let test_case_011 () =
   let expected = true
   and computed, _ =
-    Gamma.(Helpers.k_set [ "a", star ] + empty)
+    K.(Helpers.k_set [ "a", star ] + empty)
     |- (v "a" |-> mu "x" (v "a" |-> v "x") <? mu "x" (v "a" |-> v "x"))
          Variables.create
   in
@@ -114,7 +113,7 @@ let test_case_011 () =
 let test_case_012 () =
   let expected = true
   and computed, _ =
-    Gamma.(Helpers.k_set [ "a", star ] + empty)
+    K.(Helpers.k_set [ "a", star ] + empty)
     |- (mu "y" (v "a" |-> v "y") <? mu "x" (v "a" |-> v "x")) Variables.create
   in
   Alcotest.(check bool)
@@ -123,9 +122,9 @@ let test_case_012 () =
 let test_case_013 () =
   let expected = true
   and computed, _ =
-    Gamma.(Helpers.k_set [ "a", star ] + empty)
-    |- ( forall ("x", Gamma.star) (v "x" |-> v "a")
-       <? forall ("y", Gamma.star) (v "y" |-> v "a") )
+    K.(Helpers.k_set [ "a", star ] + empty)
+    |- ( forall ("x", K.star) (v "x" |-> v "a")
+       <? forall ("y", K.star) (v "y" |-> v "a") )
          Variables.create
   in
   Alcotest.(check bool)
@@ -134,9 +133,9 @@ let test_case_013 () =
 let test_case_014 () =
   let expected = false
   and computed, _ =
-    Gamma.(Helpers.k_set [ "a", star ] + empty)
-    |- ( forall ("x", Gamma.(star |-> star)) (v "x" |-> v "a")
-       <? forall ("y", Gamma.star) (v "y" |-> v "a") )
+    K.(Helpers.k_set [ "a", star ] + empty)
+    |- ( forall ("x", K.(star |-> star)) (v "x" |-> v "a")
+       <? forall ("y", K.star) (v "y" |-> v "a") )
          Variables.create
   in
   Alcotest.(check bool)
@@ -146,9 +145,9 @@ let test_case_014 () =
 let test_case_015 () =
   let expected = false
   and computed, _ =
-    Gamma.(Helpers.k_set [ "a", star ] + empty)
-    |- ( forall ("x", Gamma.star) (v "x" |-> v "a")
-       <? forall ("y", Gamma.(star |-> star)) (v "y" |-> v "a") )
+    K.(Helpers.k_set [ "a", star ] + empty)
+    |- ( forall ("x", K.star) (v "x" |-> v "a")
+       <? forall ("y", K.(star |-> star)) (v "y" |-> v "a") )
          Variables.create
   in
   Alcotest.(check bool)
@@ -158,9 +157,9 @@ let test_case_015 () =
 let test_case_016 () =
   let expected = true
   and computed, _ =
-    Gamma.(Helpers.k_set [ "a", star ] + empty)
-    |- ( exists ("x", Gamma.star) (v "x" |-> v "a")
-       <? exists ("y", Gamma.star) (v "y" |-> v "a") )
+    K.(Helpers.k_set [ "a", star ] + empty)
+    |- ( exists ("x", K.star) (v "x" |-> v "a")
+       <? exists ("y", K.star) (v "y" |-> v "a") )
          Variables.create
   in
   Alcotest.(check bool)
@@ -169,9 +168,9 @@ let test_case_016 () =
 let test_case_017 () =
   let expected = false
   and computed, _ =
-    Gamma.(Helpers.k_set [ "a", star ] + empty)
-    |- ( exists ("x", Gamma.star) (v "x" |-> v "a")
-       <? exists ("y", Gamma.(star |-> star)) (v "y" |-> v "a") )
+    K.(Helpers.k_set [ "a", star ] + empty)
+    |- ( exists ("x", K.star) (v "x" |-> v "a")
+       <? exists ("y", K.(star |-> star)) (v "y" |-> v "a") )
          Variables.create
   in
   Alcotest.(check bool)
@@ -181,9 +180,9 @@ let test_case_017 () =
 let test_case_018 () =
   let expected = false
   and computed, _ =
-    Gamma.(Helpers.k_set [ "a", star ] + empty)
-    |- ( exists ("x", Gamma.(star |-> star)) (v "x" |-> v "a")
-       <? exists ("y", Gamma.star) (v "y" |-> v "a") )
+    K.(Helpers.k_set [ "a", star ] + empty)
+    |- ( exists ("x", K.(star |-> star)) (v "x" |-> v "a")
+       <? exists ("y", K.star) (v "y" |-> v "a") )
          Variables.create
   in
   Alcotest.(check bool)
@@ -193,26 +192,26 @@ let test_case_018 () =
 let test_case_019 () =
   let expected = true
   and computed, _ =
-    Gamma.(Helpers.k_set [ "a", star ] + empty)
-    |- (forall ("x", Gamma.star) (v "x") <*> v "a" <? v "a") Variables.create
+    K.(Helpers.k_set [ "a", star ] + empty)
+    |- (forall ("x", K.star) (v "x") <$> v "a" <? v "a") Variables.create
   in
   Alcotest.(check bool) "should accept (forall(x:*).x) a <? a" expected computed
 
 let test_case_020 () =
   let expected = true
   and computed, _ =
-    Gamma.(Helpers.k_set [ "a", star ] + empty)
-    |- (v "a" <? (forall ("x", Gamma.star) (v "x") <*> v "a")) Variables.create
+    K.(Helpers.k_set [ "a", star ] + empty)
+    |- (v "a" <? (forall ("x", K.star) (v "x") <$> v "a")) Variables.create
   in
   Alcotest.(check bool) "should accept a <? (forall(x:*).x) a" expected computed
 
 let test_case_021 () =
   let expected = true
   and computed, _ =
-    Gamma.(
+    K.(
       Helpers.k_set [ "a", star ]
-      + Helpers.t_set [ "b", lambda ("x", Gamma.star) (v "x") ])
-    |- (v "b" <*> v "a" <? v "a") Variables.create
+      + Helpers.t_set [ "b", lambda ("x", K.star) (v "x") ])
+    |- (v "b" <$> v "a" <? v "a") Variables.create
   in
   Alcotest.(check bool)
     "should accept b=(lambda(x:*).x) a <? a" expected computed
@@ -220,10 +219,10 @@ let test_case_021 () =
 let test_case_022 () =
   let expected = true
   and computed, _ =
-    Gamma.(
+    K.(
       Helpers.k_set [ "a", star ]
-      + Helpers.t_set [ "b", lambda ("x", Gamma.star) (v "x") ])
-    |- (v "a" <? (v "b" <*> v "a")) Variables.create
+      + Helpers.t_set [ "b", lambda ("x", K.star) (v "x") ])
+    |- (v "a" <? (v "b" <$> v "a")) Variables.create
   in
   Alcotest.(check bool)
     "should accept a <? b=(lambda(x:*).x) a" expected computed
@@ -231,7 +230,7 @@ let test_case_022 () =
 let test_case_023 () =
   let expected = true
   and computed, _ =
-    Gamma.(Helpers.k_set [ "a", star ] + empty)
+    K.(Helpers.k_set [ "a", star ] + empty)
     |- (v "a" <? trait [] [ "n", v "a" ] [] [] @ "n") Variables.create
   in
   Alcotest.(check bool)
@@ -240,7 +239,7 @@ let test_case_023 () =
 let test_case_024 () =
   let expected = true
   and computed, _ =
-    Gamma.(Helpers.k_set [ "a", star ] + empty)
+    K.(Helpers.k_set [ "a", star ] + empty)
     |- (trait [] [ "n", v "a" ] [] [] @ "n" <? v "a") Variables.create
   in
   Alcotest.(check bool)
@@ -249,7 +248,7 @@ let test_case_024 () =
 let test_case_025 () =
   let expected = true
   and computed, _ =
-    Helpers.k_set [ "a", Gamma.star ]
+    Helpers.k_set [ "a", K.star ]
     + Helpers.t_set [ "b", trait [] [ "n", v "a" ] [] [] ]
     |- (v "a" <? v "b" @ "n") Variables.create
   in
@@ -259,7 +258,7 @@ let test_case_025 () =
 let test_case_026 () =
   let expected = true
   and computed, _ =
-    Helpers.k_set [ "a", Gamma.star ]
+    Helpers.k_set [ "a", K.star ]
     + Helpers.t_set [ "b", trait [] [ "n", v "a" ] [] [] ]
     |- (v "b" @ "n" <? v "a") Variables.create
   in
@@ -269,7 +268,7 @@ let test_case_026 () =
 let test_case_027 () =
   let expected = true
   and computed, _ =
-    Helpers.k_set [ "a", Gamma.star ]
+    Helpers.k_set [ "a", K.star ]
     + Helpers.t_set [ "b", trait [] [] [] [ gamma [] [ "n", v "a" ] [] [] ] ]
     |- (v "b" @ "n" <? v "a") Variables.create
   in
@@ -279,7 +278,7 @@ let test_case_027 () =
 let test_case_028 () =
   let expected = true
   and computed, _ =
-    Helpers.k_set [ "a", Gamma.star ]
+    Helpers.k_set [ "a", K.star ]
     + Helpers.t_set [ "b", trait [] [] [] [ gamma [] [ "n", v "a" ] [] [] ] ]
     |- (v "a" <? v "b" @ "n") Variables.create
   in
@@ -289,7 +288,7 @@ let test_case_028 () =
 let test_case_029 () =
   let expected = false
   and computed, _ =
-    Helpers.k_set [ "a", Gamma.star ]
+    Helpers.k_set [ "a", K.star ]
     + Helpers.t_set [ "b", trait [] [] [] [ gamma [] [ "m", v "a" ] [] [] ] ]
     |- (v "a" <? v "b" @ "n") Variables.create
   in
@@ -299,9 +298,9 @@ let test_case_029 () =
 let test_case_030 () =
   let expected = true
   and computed, _ =
-    Gamma.(Helpers.k_set [ "a", star ] + empty)
-    |- ( forall ("x", Gamma.(trait [ "n", star ])) (v "x")
-       <? forall ("y", Gamma.(trait [ "n", star; "m", star ])) (v "y") )
+    K.(Helpers.k_set [ "a", star ] + empty)
+    |- ( forall ("x", K.(trait [ "n", star ])) (v "x")
+       <? forall ("y", K.(trait [ "n", star; "m", star ])) (v "y") )
          Variables.create
   in
   Alcotest.(check bool)
@@ -310,9 +309,9 @@ let test_case_030 () =
 let test_case_031 () =
   let expected = false
   and computed, _ =
-    Gamma.(Helpers.k_set [ "a", star ] + empty)
-    |- ( forall ("x", Gamma.(trait [ "n", star; "m", star ])) (v "x")
-       <? forall ("y", Gamma.(trait [ "n", star ])) (v "y") )
+    K.(Helpers.k_set [ "a", star ] + empty)
+    |- ( forall ("x", K.(trait [ "n", star; "m", star ])) (v "x")
+       <? forall ("y", K.(trait [ "n", star ])) (v "y") )
          Variables.create
   in
   Alcotest.(check bool)

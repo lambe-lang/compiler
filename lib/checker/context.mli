@@ -5,3 +5,5 @@ module Variables : sig
 
   val fresh : t -> string * t
 end
+
+type 'a state = Variables.t -> 'a * Variables.t

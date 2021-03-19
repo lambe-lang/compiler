@@ -1,124 +1,120 @@
 open Lambe_checker.Gamma
 open Lambe_checker.Type.Checker.Operator
-open Dsl
 open Dsl.Types
+module K = Dsl.Kinds
 
 let test_case_000 () =
   let expected = true
   and computed =
-    Gamma.(Helpers.k_set [ "a", star ] + empty) |- (v "a" <:?> Gamma.star)
+    K.(Helpers.k_set [ "a", star ] + empty) |- (v "a" <:?> K.star)
   in
   Alcotest.(check bool) "should accept a :? *" expected computed
 
 let test_case_001 () =
   let expected = true
   and computed =
-    Gamma.(Helpers.k_set [ "a", star ] + empty)
-    |- (v "a" |-> v "a" <:?> Gamma.star)
+    K.(Helpers.k_set [ "a", star ] + empty) |- (v "a" |-> v "a" <:?> K.star)
   in
   Alcotest.(check bool) "should accept a -> a :? *" expected computed
 
 let test_case_002 () =
   let expected = true
   and computed =
-    Gamma.(Helpers.k_set [ "a", star ] + empty)
-    |- (v "a" |@> v "a" <:?> Gamma.star)
+    K.(Helpers.k_set [ "a", star ] + empty) |- (v "a" |@> v "a" <:?> K.star)
   in
   Alcotest.(check bool) "should accept a @> a :? *" expected computed
 
 let test_case_003 () =
   let expected = true
   and computed =
-    Gamma.(Helpers.k_set [ "a", star |-> star; "b", star ] + empty)
-    |- (v "a" <*> v "b" <:?> Gamma.star)
+    K.(Helpers.k_set [ "a", star |-> star; "b", star ] + empty)
+    |- (v "a" <$> v "b" <:?> K.star)
   in
   Alcotest.(check bool) "should accept a b :? *" expected computed
 
 let test_case_004 () =
   let expected = false
   and computed =
-    Gamma.(Helpers.k_set [ "a", star ] + empty)
-    |- (v "a" <*> v "a" <:?> Gamma.star)
+    K.(Helpers.k_set [ "a", star ] + empty) |- (v "a" <$> v "a" <:?> K.star)
   in
   Alcotest.(check bool) "should reject a:* |- a a :? *" expected computed
 
 let test_case_005 () =
   let expected = true
   and computed =
-    Gamma.(Helpers.k_set [ "a", trait [ "n", star ] ] + empty)
-    |- (v "a" @ "n" <:?> Gamma.star)
+    K.(Helpers.k_set [ "a", trait [ "n", star ] ] + empty)
+    |- (v "a" @ "n" <:?> K.star)
   in
   Alcotest.(check bool) "should accept a.n :? {n:*}" expected computed
 
 let test_case_006 () =
   let expected = true
   and computed =
-    Gamma.(Helpers.k_set [ "a", star; "b", star ] + empty)
-    |- (v "a" <|> v "b" <:?> Gamma.star)
+    K.(Helpers.k_set [ "a", star; "b", star ] + empty)
+    |- (v "a" <|> v "b" <:?> K.star)
   in
   Alcotest.(check bool) "should accept a | b :? *" expected computed
 
 let test_case_007 () =
   let expected = true
   and computed =
-    Gamma.(Helpers.k_set [ "b", star ] + empty)
-    |- (lambda ("x", Gamma.star) (v "b") <:?> Gamma.(star |-> star))
+    K.(Helpers.k_set [ "b", star ] + empty)
+    |- (lambda ("x", K.star) (v "b") <:?> K.(star |-> star))
   in
   Alcotest.(check bool) "should accept lambda (x:*).b :? *->*" expected computed
 
 let test_case_008 () =
   let expected = false
   and computed =
-    Gamma.(Helpers.k_set [ "b", star ] + empty)
-    |- (lambda ("x", Gamma.star) (v "b") <:?> Gamma.star)
+    K.(Helpers.k_set [ "b", star ] + empty)
+    |- (lambda ("x", K.star) (v "b") <:?> K.star)
   in
   Alcotest.(check bool) "should reject lambda (x:*).b :? *" expected computed
 
 let test_case_009 () =
   let expected = false
   and computed =
-    Gamma.(Helpers.k_set [ "b", star ] + empty)
-    |- (forall ("x", Gamma.star) (v "b") <:?> Gamma.(star |-> star))
+    K.(Helpers.k_set [ "b", star ] + empty)
+    |- (forall ("x", K.star) (v "b") <:?> K.(star |-> star))
   in
   Alcotest.(check bool) "should reject forall (x:*).b :? *->*" expected computed
 
 let test_case_010 () =
   let expected = true
   and computed =
-    Gamma.(Helpers.k_set [ "b", star ] + empty)
-    |- (forall ("x", Gamma.star) (v "b") <:?> Gamma.star)
+    K.(Helpers.k_set [ "b", star ] + empty)
+    |- (forall ("x", K.star) (v "b") <:?> K.star)
   in
   Alcotest.(check bool) "should accept forall (x:*).b :? *" expected computed
 
 let test_case_0011 () =
   let expected = true
   and computed =
-    Gamma.(Helpers.k_set [ "b", star ] + empty)
-    |- (exists ("x", Gamma.star) (v "b") <:?> Gamma.star)
+    K.(Helpers.k_set [ "b", star ] + empty)
+    |- (exists ("x", K.star) (v "b") <:?> K.star)
   in
   Alcotest.(check bool) "should accept exists (x:*).b :? *->*" expected computed
 
 let test_case_012 () =
   let expected = false
   and computed =
-    Gamma.(Helpers.k_set [ "b", star ] + empty)
-    |- (exists ("x", Gamma.star) (v "b") <:?> Gamma.(star |-> star))
+    K.(Helpers.k_set [ "b", star ] + empty)
+    |- (exists ("x", K.star) (v "b") <:?> K.(star |-> star))
   in
   Alcotest.(check bool) "should accept exists (x:*).b :? *->*" expected computed
 
 let test_case_013 () =
   let expected = true
   and computed =
-    Gamma.(Helpers.k_set [ "b", star ] + empty)
-    |- (mu "x" (v "x") <:?> Gamma.star)
+    K.(Helpers.k_set [ "b", star ] + empty) |- (mu "x" (v "x") <:?> K.star)
   in
   Alcotest.(check bool) "should accept mu (x).x :? *" expected computed
 
 let test_case_014 () =
   let expected = true
   and computed =
-    Gamma.(Helpers.k_set [ "b", star |-> star ] + empty)
-    |- (mu "x" (v "b" <*> v "x") <:?> Gamma.star)
+    K.(Helpers.k_set [ "b", star |-> star ] + empty)
+    |- (mu "x" (v "b" <$> v "x") <:?> K.star)
   in
   Alcotest.(check bool)
     "should accept b:*->* |- mu (x).(b x) :? *" expected computed
@@ -126,8 +122,7 @@ let test_case_014 () =
 let test_case_015 () =
   let expected = true
   and computed =
-    Gamma.(Helpers.k_set [ "b", trait [ "n", star ] ])
-    |- (v "b" @ "n" <:?> Gamma.star)
+    K.(Helpers.k_set [ "b", trait [ "n", star ] ]) |- (v "b" @ "n" <:?> K.star)
   in
   Alcotest.(check bool)
     "should accept b=trait { n:* } |- b.n:*" expected computed
@@ -135,8 +130,8 @@ let test_case_015 () =
 let test_case_016 () =
   let expected = true
   and computed =
-    Gamma.(Helpers.k_set [ "b", trait [ "n", star; "m", star ] ])
-    |- (v "b" @ "n" <:?> Gamma.star)
+    K.(Helpers.k_set [ "b", trait [ "n", star; "m", star ] ])
+    |- (v "b" @ "n" <:?> K.star)
   in
   Alcotest.(check bool)
     "should accept b=trait { n:*, m:* } |- b.n:*" expected computed
@@ -144,8 +139,7 @@ let test_case_016 () =
 let test_case_017 () =
   let expected = false
   and computed =
-    Gamma.(Helpers.k_set [ "b", trait [ "m", star ] ])
-    |- (v "b" @ "n" <:?> Gamma.star)
+    K.(Helpers.k_set [ "b", trait [ "m", star ] ]) |- (v "b" @ "n" <:?> K.star)
   in
   Alcotest.(check bool)
     "should reject b=trait { m:* } |- b.n:*" expected computed

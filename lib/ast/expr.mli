@@ -23,8 +23,8 @@ type 'a t =
   | Apply of 'a t * 'a t * 'a
   | Bind of Common.var * 'a t * 'a t * 'a
   | Use of 'a t * 'a t * 'a
-  | When of Common.var * 'a Type.t * 'a t * 'a
   | Trait of 'a Type.gamma * 'a t Common.dictionary * 'a
   | Access of 'a t * Common.id * 'a
+  | When of Common.var * ('a Type.t * 'a t) list * 'a
   | Pack of 'a Type.t * 'a t * 'a
-  | Unpack of 'a Type.t * 'a t * 'a t * 'a t * 'a
+  | Unpack of 'a Type.t * Common.var * 'a t * 'a t * 'a

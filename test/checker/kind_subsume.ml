@@ -1,6 +1,6 @@
 open Lambe_checker.Kind
 open Lambe_checker.Kind.Checker.Operator
-open Dsl.Gamma
+open Dsl.Kinds
 
 let test_case_001 () =
   let expected = true

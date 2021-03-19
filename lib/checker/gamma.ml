@@ -18,6 +18,8 @@ module Helpers = struct
 
   let s_get = function Gamma (_, _, s, _) -> s
 
+  let s_set = function s -> Gamma ([], [], s, [])
+
   let w_get = function Gamma (_, _, _, w) -> w
 end
 
