@@ -5,11 +5,6 @@ module Checker : sig
     -> 'a Lambe_ast.Type.t
     -> bool Context.state
 
-  val synthetize :
-       'a Lambe_ast.Type.gamma
-    -> 'a Lambe_ast.Expr.t
-    -> 'a Lambe_ast.Type.t option Context.state
-
   module Operator : sig
     val ( <:?> ) :
          'a Lambe_ast.Expr.t

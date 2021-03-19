@@ -42,8 +42,6 @@ module Checker = struct
       | _ -> false, v )
     | _ -> false, v
 
-  let synthetize _ _ s = None, s
-
   module Operator = struct
     let ( <:?> ) t1 t2 s g = check g t1 t2 s
 

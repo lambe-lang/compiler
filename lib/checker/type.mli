@@ -5,9 +5,6 @@ module Checker : sig
     -> 'a Lambe_ast.Kind.t
     -> bool
 
-  val synthetize :
-    'a Lambe_ast.Type.gamma -> 'a Lambe_ast.Type.t -> 'a Lambe_ast.Kind.t option
-
   val reduce :
     'a Lambe_ast.Type.gamma -> 'a Lambe_ast.Type.t -> 'a Lambe_ast.Type.t option
 
