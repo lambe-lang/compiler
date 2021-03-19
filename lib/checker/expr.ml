@@ -9,6 +9,7 @@ module Substitution = struct
     | Lambda (a, _, _) when a = v -> t
     | Lambda (a, e1, s) -> Lambda (a, substitute v r e1, s)
     | Apply (e1, e2, s) -> Apply (substitute v r e1, substitute v r e2, s)
+    | Invoke (e1, e2, s) -> Invoke (substitute v r e1, substitute v r e2, s)
     | Bind (a, _, _, _) when v = a -> t
     | Bind (a, e1, e2, s) -> Bind (a, substitute v r e1, substitute v r e2, s)
     | Use (e1, e2, s) -> Use (substitute v r e1, substitute v r e2, s)
