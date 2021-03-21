@@ -20,6 +20,7 @@
 type 'a t =
   | Variable of Common.var * 'a
   | Lambda of Common.var * 'a t * 'a
+  | Method of 'a t * 'a
   | Apply of 'a t * 'a t * 'a
   | Invoke of 'a t * 'a t * 'a
   | Bind of Common.var * 'a t * 'a t * 'a

@@ -41,6 +41,8 @@ module Exprs = struct
 
   let lambda v e = Expr.Lambda (v, e, ())
 
+  let zeta e = Expr.Method (e, ())
+
   let ( <$> ) e e' = Expr.Apply (e, e', ())
 
   let bind v e e' = Expr.Bind (v, e, e', ())

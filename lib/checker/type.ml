@@ -46,6 +46,10 @@ module Substitution = struct
 end
 
 module Checker = struct
+  let ( <$> ) = Option.map
+
+  let ( >>= ) = Option.bind
+
   let rec check g t k =
     let open Kind.Checker.Operator in
     Option.fold ~none:false ~some:(fun k' -> k' <? k) (synthetize g t)
@@ -55,8 +59,6 @@ module Checker = struct
     let open Lambe_ast.Type in
     let open Kind.Checker.Operator in
     let open List in
-    let ( >>= ) = Option.bind in
-    let ( <$> ) = Option.map in
     match t with
     | Variable (n, _) ->
       snd <$> find_opt (fun (m, _) -> n = m) Gamma.Helpers.(k_get g)
@@ -71,7 +73,9 @@ module Checker = struct
       >>= function
       | Trait (l, _) -> snd <$> find_opt (fun (m, _) -> n = m) l | _ -> None )
     | Union (t1, t2, _) -> (
-      match synthetize g t1, synthetize g t2 with
+      let r1 = synthetize g t1 in
+      let r2 = r1 >>= (fun _ -> synthetize g t2) in
+      match r1, r2 with
       | Some k1, Some k2 when k1 <? k2 -> Some k2
       | Some k1, Some k2 when k2 <? k1 -> Some k1
       | _ -> None )
@@ -101,8 +105,6 @@ module Checker = struct
     let open Gamma in
     let open Substitution in
     let open List in
-    let ( >>= ) = Option.bind in
-    let ( <$> ) = Option.map in
     let rec find_type n = function
       | [] -> None
       | Gamma (_, t, _, _) :: l -> (

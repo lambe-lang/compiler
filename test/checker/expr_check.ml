@@ -22,10 +22,20 @@ let test_case_001 () =
   Alcotest.(check bool)
     "should accept { x -> x } :? int -> int" expected computed
 
+let test_case_002 () =
+  let expected = true
+  and computed, _ =
+    Helpers.k_set [ "int", K.star ]
+    |- (zeta (v "self") <:?> T.(v "int" |@> v "int")) Variables.create
+  in
+  Alcotest.(check bool)
+    "should accept {> self } :? int |@> int" expected computed
+
 let test_cases =
   let open Alcotest in
   ( "Expression check"
   , [
       test_case "Accept a :? int" `Quick test_case_000
     ; test_case "Accept { x -> x } :? int -> int" `Quick test_case_001
+    ; test_case "Accept {> self } :? int |@> int" `Quick test_case_002
     ] )
