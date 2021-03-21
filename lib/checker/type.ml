@@ -18,31 +18,34 @@ end
 
 module Substitution = struct
   (* Substituste v by r in t *)
-  let rec substitute v r t =
+  let substitute v r t =
     let open Lambe_ast.Type in
     let open List in
-    let subst_field (n, t1) = n, substitute v r t1 in
-    let rec subst_gamma (Gamma (kd, ty, si, wi)) =
-      Gamma (kd, map subst_field ty, map subst_field si, map subst_gamma wi)
+    let rec subs t =
+      let subst_field (n, t1) = n, subs t1 in
+      let rec subst_gamma (Gamma (kd, ty, si, wi)) =
+        Gamma (kd, map subst_field ty, map subst_field si, map subst_gamma wi)
+      in
+      match t with
+      | Variable (a, _) when v = a -> r
+      | Variable _ -> t
+      | Arrow (t1, t2, s) -> Arrow (subs t1, subs t2, s)
+      | Invoke (t1, t2, s) -> Invoke (subs t1, subs t2, s)
+      | Apply (t1, t2, s) -> Apply (subs t1, subs t2, s)
+      | Access (t1, n, s) -> Access (subs t1, n, s)
+      | Union (t1, t2, s) -> Union (subs t1, subs t2, s)
+      | Lambda (a, _, _, _) when a = v -> t
+      | Lambda (a, k, t1, s) -> Lambda (a, k, subs t1, s)
+      | Forall (a, _, _, _) when a = v -> t
+      | Forall (a, k, t1, s) -> Forall (a, k, subs t1, s)
+      | Exists (a, _, _, _) when a = v -> t
+      | Exists (a, k, t1, s) -> Exists (a, k, subs t1, s)
+      | Rec (a, _, _) when v = a -> t
+      | Rec (a, t1, s) -> Rec (a, subs t1, s)
+      | Const (a, l1, s) -> Const (a, map subst_field l1, s)
+      | Trait (gamma, s) -> Trait (subst_gamma gamma, s)
     in
-    match t with
-    | Variable (a, _) when v = a -> r
-    | Variable _ -> t
-    | Arrow (t1, t2, s) -> Arrow (substitute v r t1, substitute v r t2, s)
-    | Invoke (t1, t2, s) -> Invoke (substitute v r t1, substitute v r t2, s)
-    | Apply (t1, t2, s) -> Apply (substitute v r t1, substitute v r t2, s)
-    | Access (t1, n, s) -> Access (substitute v r t1, n, s)
-    | Union (t1, t2, s) -> Union (substitute v r t1, substitute v r t2, s)
-    | Lambda (a, _, _, _) when a = v -> t
-    | Lambda (a, k, t1, s) -> Lambda (a, k, substitute v r t1, s)
-    | Forall (a, _, _, _) when a = v -> t
-    | Forall (a, k, t1, s) -> Forall (a, k, substitute v r t1, s)
-    | Exists (a, _, _, _) when a = v -> t
-    | Exists (a, k, t1, s) -> Exists (a, k, substitute v r t1, s)
-    | Rec (a, _, _) when v = a -> t
-    | Rec (a, t1, s) -> Rec (a, substitute v r t1, s)
-    | Const (a, l1, s) -> Const (a, map subst_field l1, s)
-    | Trait (gamma, s) -> Trait (subst_gamma gamma, s)
+    subs t
 end
 
 module Checker = struct

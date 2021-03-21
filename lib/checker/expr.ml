@@ -1,24 +1,25 @@
 module Substitution = struct
   (* Substituste v by r in t *)
-  let rec substitute v r t =
+  let substitute v r t =
     let open Lambe_ast.Expr in
     let ( <$> ) = List.map in
-    match t with
-    | Variable (a, _) when v = a -> r
-    | Variable _ -> t
-    | Lambda (a, _, _) when a = v -> t
-    | Lambda (a, e1, s) -> Lambda (a, substitute v r e1, s)
-    | Method (e1, s) -> Method (substitute v r e1, s)
-    | Apply (e1, e2, s) -> Apply (substitute v r e1, substitute v r e2, s)
-    | Invoke (e1, e2, s) -> Invoke (substitute v r e1, substitute v r e2, s)
-    | Bind (a, _, _, _) when v = a -> t
-    | Bind (a, e1, e2, s) -> Bind (a, substitute v r e1, substitute v r e2, s)
-    | Use (e1, e2, s) -> Use (substitute v r e1, substitute v r e2, s)
-    | Trait (g, l, s) -> Trait (g, (fun (n, e) -> n, substitute v r e) <$> l, s)
-    | When (n, l, s) -> When (n, (fun (t, e) -> t, substitute v r e) <$> l, s)
-    | Pack (t, e, s) -> Pack (t, substitute v r e, s)
-    | Unpack (t, n, e1, e2, s) ->
-      Unpack (t, n, substitute v r e1, substitute v r e2, s)
+    let rec subs = function
+      | Variable (a, _) when v = a -> r
+      | Variable _ -> t
+      | Lambda (a, _, _) when a = v -> t
+      | Lambda (a, e1, s) -> Lambda (a, subs e1, s)
+      | Method (e1, s) -> Method (subs e1, s)
+      | Apply (e1, e2, s) -> Apply (subs e1, subs e2, s)
+      | Invoke (e1, e2, s) -> Invoke (subs e1, subs e2, s)
+      | Bind (a, _, _, _) when v = a -> t
+      | Bind (a, e1, e2, s) -> Bind (a, subs e1, subs e2, s)
+      | Use (e1, e2, s) -> Use (subs e1, subs e2, s)
+      | Trait (g, l, s) -> Trait (g, (fun (n, e) -> n, subs e) <$> l, s)
+      | When (n, l, s) -> When (n, (fun (t, e) -> t, subs e) <$> l, s)
+      | Pack (t, e, s) -> Pack (t, subs e, s)
+      | Unpack (t, n, e1, e2, s) -> Unpack (t, n, subs e1, subs e2, s)
+    in
+    subs t
 end
 
 module Checker = struct

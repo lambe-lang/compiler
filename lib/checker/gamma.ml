@@ -5,6 +5,12 @@ module Monoid = struct
 
   let combine (Gamma (k, t, s, w)) (Gamma (k', t', s', w')) =
     Gamma (k @ k', t @ t', s @ s', w @ w')
+
+  (* LAWS
+     combine neutral g           = g
+     combine g neutral           = g
+     combine g1 (combine g2 g3)  = (combine g1 g2) g3)
+  *)
 end
 
 module Helpers = struct
