@@ -15,7 +15,7 @@ module Types = struct
 
   let ( |-> ) t t' = Type.Arrow (t, t', ())
 
-  let ( |@> ) t t' = Type.Invoke (t, t', ())
+  let ( |=> ) t t' = Type.Invoke (t, t', ())
 
   let ( <$> ) t t' = Type.Apply (t, t', ())
 
@@ -53,7 +53,7 @@ module Exprs = struct
 
   let impl g l = Expr.Trait (g, l, ())
 
-  let ( @ ) e n = Expr.Access (e, n, ())
+  let ( @ ) e n = Expr.Use (e, n, ())
 
   let pack t e = Expr.Pack (t, e, ())
 

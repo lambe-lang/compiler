@@ -26,7 +26,7 @@ let test_case_002 () =
   let expected = true
   and computed, _ =
     Helpers.k_set [ "int", K.star ]
-    |- (zeta (v "self") <:?> T.(v "int" |@> v "int")) Variables.create
+    |- (zeta (v "self") <:?> T.(v "int" |=> v "int")) Variables.create
   in
   Alcotest.(check bool)
     "should accept {> self } :? int |@> int" expected computed

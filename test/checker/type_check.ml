@@ -20,7 +20,7 @@ let test_case_001 () =
 let test_case_002 () =
   let expected = true
   and computed =
-    K.(Helpers.k_set [ "a", star ] + empty) |- (v "a" |@> v "a" <:?> K.star)
+    K.(Helpers.k_set [ "a", star ] + empty) |- (v "a" |=> v "a" <:?> K.star)
   in
   Alcotest.(check bool) "should accept a @> a :? *" expected computed
 

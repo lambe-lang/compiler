@@ -47,7 +47,7 @@ let test_case_005 () =
   let expected = true
   and computed, _ =
     K.(Helpers.k_set [ "a", star; "b", star ] + empty)
-    |- (v "b" <|> v "a" |@> v "a" <? (v "a" |@> v "a")) Variables.create
+    |- (v "b" <|> v "a" |=> v "a" <? (v "a" |=> v "a")) Variables.create
   in
   Alcotest.(check bool) "should accept a | b @-> a <? a @-> a" expected computed
 

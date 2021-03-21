@@ -15,7 +15,6 @@ module Substitution = struct
     | Bind (a, e1, e2, s) -> Bind (a, substitute v r e1, substitute v r e2, s)
     | Use (e1, e2, s) -> Use (substitute v r e1, substitute v r e2, s)
     | Trait (g, l, s) -> Trait (g, (fun (n, e) -> n, substitute v r e) <$> l, s)
-    | Access (t1, n, s) -> Access (substitute v r t1, n, s)
     | When (n, l, s) -> When (n, (fun (t, e) -> t, substitute v r e) <$> l, s)
     | Pack (t, e, s) -> Pack (t, substitute v r e, s)
     | Unpack (t, n, e1, e2, s) ->
@@ -70,12 +69,11 @@ module Checker = struct
             if b then Some t2, v else None, v
           | _ -> None, v )
       | _ -> None, v )
-    | Access (e, n, s) -> (
-      match synthetize g e v with
-      | Some T.(Trait (g', _)), v ->
-        synthetize Gamma.(g' + g) (Variable (n, s)) v
+    | Use (e1, e2, _) -> (
+      match synthetize g e1 v with
+      | Some T.(Trait (g', _)), v -> synthetize Gamma.(g' + g) e2 v
       | Some T.(Const (_, l, _)), v ->
-        synthetize Gamma.(Helpers.(s_set l) + g) (Variable (n, s)) v
+        synthetize Gamma.(Helpers.(s_set l) + g) e2 v
       | _ -> None, v )
     | _ -> None, v
 
