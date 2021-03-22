@@ -2,9 +2,6 @@ open Lambe_ast
 
 module Render = struct
   let rec pp ppf =
-    let open Kind in
-    function
-    | Arrow (l, r, _) -> Format.fprintf ppf "(%a) -> %a" pp l pp r
-    | Type _ -> Format.fprintf ppf "type"
-    | Trait _ -> Format.fprintf ppf "trait"
+    let open Expr in
+    (function _ -> Format.fprintf ppf "?")
 end

@@ -144,6 +144,13 @@ let test_case_017 () =
   Alcotest.(check bool)
     "should reject b=trait { m:* } |- b.n:*" expected computed
 
+let test_case_018 () =
+  let expected = true
+  and computed =
+    K.(Helpers.k_set [ "b", star ]) |- (data "r" [ "x", v "b" ] <:?> K.star)
+  in
+  Alcotest.(check bool) "should accept data r (x:b) : *" expected computed
+
 let test_cases =
   let open Alcotest in
   ( "Type check"
@@ -166,4 +173,5 @@ let test_cases =
     ; test_case "Accept b=trait { n : * } |- b.n:*" `Quick test_case_015
     ; test_case "Accept b=trait { n : *, m:* } |- b.n:*" `Quick test_case_016
     ; test_case "Reject b=trait { m:* } |- b.n:*" `Quick test_case_017
+    ; test_case "Accept data r (x:b) : *" `Quick test_case_018
     ] )

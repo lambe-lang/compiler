@@ -55,6 +55,9 @@ module Checker = struct
 
   let rec check g t k =
     let open Kind.Checker.Operator in
+    let print_check = Lambe_render.Type.Render.check Format.std_formatter in
+    let _ = print_check t k
+    and _ = print_string "\n" in
     Option.fold ~none:false ~some:(fun k' -> k' <? k) (synthetize g t)
 
   and synthetize g t =
@@ -94,7 +97,10 @@ module Checker = struct
     | Rec (n, t, s) ->
       let g = Gamma.(Helpers.k_set [ n, K.Type s ] + g) in
       synthetize g t
-    | Const (_, _, s) -> if check g t (K.Type s) then Some (K.Type s) else None
+    | Const (_, s, l) ->
+      if for_all (fun (_, t) -> check g t (K.Type l)) s
+      then Some (K.Type l)
+      else None
     | Trait ((Gamma (k, t, s, w) as g'), l) ->
       if for_all (fun (_, t) -> check Gamma.(g + g') t (K.Type l)) t
          && for_all (fun (_, t) -> check Gamma.(g + g') t (K.Type l)) s
@@ -143,7 +149,7 @@ module Checker = struct
     let open Substitution in
     let open Kind.Checker.Operator in
     let open List in
-    let print_subtype = Lambe_render.Type.Render.subtype Format.err_formatter in
+    let print_subtype = Lambe_render.Type.Render.subtype Format.std_formatter in
     let _ = print_subtype t1 t2
     and _ = print_string "\n" in
     match t1, t2 with

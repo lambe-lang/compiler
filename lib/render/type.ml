@@ -23,5 +23,7 @@ module Render = struct
     | [ (n, t) ] -> Format.fprintf ppf "(%s:%a)" n pp t
     | (n, t) :: l -> Format.fprintf ppf "(%s:%a) %a" n pp t pp_params l
 
+  let check ppf t k = Format.fprintf ppf "(%a) :? (%a) @." pp t Kind.Render.pp k
+
   let subtype ppf t1 t2 = Format.fprintf ppf "(%a) <? (%a) @." pp t1 pp t2
 end

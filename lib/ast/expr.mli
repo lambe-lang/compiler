@@ -1,19 +1,19 @@
 (*
 
 ε= α
-| m
 | λα.ε
+| ζ.ε
 | ε ε
 | let α = ε in ε
+| let α:τ = ε in ε
 | let use ε in ε
 | when(α).{τi -> εi}I
 | Σ
-| ε.m
+| ε.ε
 | {τ,ε}
 | let {τ,α} = ε in ε
 
-
-Σ=Γ􏰂 * M
+Σ=Γ*M
 
 *)
 
@@ -23,7 +23,7 @@ type 'a t =
   | Method of 'a t * 'a
   | Apply of 'a t * 'a t * 'a
   | Invoke of 'a t * 'a t * 'a
-  | Bind of Common.var * 'a t * 'a t * 'a
+  | Bind of Common.var * 'a Type.t option * 'a t * 'a t * 'a
   | Use of 'a t * 'a t * 'a
   | Trait of 'a Type.gamma * 'a t Common.dictionary * 'a
   | When of Common.var * ('a Type.t * 'a t) list * 'a

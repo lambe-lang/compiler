@@ -45,15 +45,17 @@ module Exprs = struct
 
   let ( <$> ) e e' = Expr.Apply (e, e', ())
 
-  let bind v e e' = Expr.Bind (v, e, e', ())
+  let bind v e e' = Expr.Bind (v, None, e, e', ())
+
+  let bindT v t e e' = Expr.Bind (v, Some t, e, e', ())
 
   let use e e' = Expr.Use (e, e', ())
 
   let switchType v l = Expr.When (v, l, ())
 
-  let impl g l = Expr.Trait (g, l, ())
+  let trait g l = Expr.Trait (g, l, ())
 
-  let ( @ ) e n = Expr.Use (e, n, ())
+  let ( @ ) e e' = Expr.Use (e, e', ())
 
   let pack t e = Expr.Pack (t, e, ())
 

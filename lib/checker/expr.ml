@@ -11,8 +11,8 @@ module Substitution = struct
       | Method (e1, s) -> Method (subs e1, s)
       | Apply (e1, e2, s) -> Apply (subs e1, subs e2, s)
       | Invoke (e1, e2, s) -> Invoke (subs e1, subs e2, s)
-      | Bind (a, _, _, _) when v = a -> t
-      | Bind (a, e1, e2, s) -> Bind (a, subs e1, subs e2, s)
+      | Bind (a, _, _, _, _) when v = a -> t
+      | Bind (a, t1, e1, e2, s) -> Bind (a, t1, subs e1, subs e2, s)
       | Use (e1, e2, s) -> Use (subs e1, subs e2, s)
       | Trait (g, l, s) -> Trait (g, (fun (n, e) -> n, subs e) <$> l, s)
       | When (n, l, s) -> When (n, (fun (t, e) -> t, subs e) <$> l, s)
@@ -52,24 +52,11 @@ module Checker = struct
 
   and synthetize g e v =
     let open List in
-    let open Type.Checker.Operator in
+    (*let open Type.Checker.Operator in*)
     let module T = Lambe_ast.Type in
     match e with
     | Variable (n, _) ->
       snd <$> find_opt (fun (m, _) -> n = m) Gamma.Helpers.(s_get g), v
-    | Apply (e1, e2, _) -> (
-      match synthetize g e2 v with
-      | Some T.(Invoke (t1, t2, _) as t3), v -> (
-        let b, v = check g e2 t1 v in
-        if b
-        then Some t2, v
-        else
-          match synthetize g e1 v with
-          | Some T.(Arrow (t1, t2, _)), v ->
-            let b, v = g |- (t3 <? t1) v in
-            if b then Some t2, v else None, v
-          | _ -> None, v )
-      | _ -> None, v )
     | Use (e1, e2, _) -> (
       match synthetize g e1 v with
       | Some T.(Trait (g', _)), v -> synthetize Gamma.(g' + g) e2 v
