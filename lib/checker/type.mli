@@ -30,5 +30,11 @@ module Checker : sig
 
     val ( |- ) :
       'a Lambe_ast.Type.gamma -> ('a Lambe_ast.Type.gamma -> 'b) -> 'b
+
+    val ( --> ) :
+         'a Lambe_ast.Type.t
+      -> 'a Lambe_ast.Type.t option
+      -> 'a Lambe_ast.Type.gamma
+      -> bool
   end
 end

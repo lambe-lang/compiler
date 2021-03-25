@@ -1,3 +1,11 @@
+(*
+    Used to extrace the context
+*)
+
+let ( <$> ) = Option.map
+
+let ( >>= ) = Option.bind
+
 module TypeContext = struct
   let get =
     let open Lambe_ast.Type in
@@ -6,7 +14,6 @@ module TypeContext = struct
     | Arrow (_, _, s) -> s
     | Invoke (_, _, s) -> s
     | Apply (_, _, s) -> s
-    | Access (_, _, s) -> s
     | Union (_, _, s) -> s
     | Lambda (_, _, _, s) -> s
     | Forall (_, _, _, s) -> s
@@ -14,6 +21,38 @@ module TypeContext = struct
     | Rec (_, _, s) -> s
     | Const (_, _, s) -> s
     | Trait (_, s) -> s
+    | Use (_, _, s) -> s
+end
+
+(*
+    Provides basic functions used when a type defnition or kind definition
+    should be retrieved from Gamma. This operation is performed with a
+    depth first seach strategy.
+*)
+module Finder = struct
+  let find_kind n g =
+    let open Lambe_ast.Type in
+    let open List in
+    let rec find = function
+      | [] -> None
+      | Gamma (k, _, _, w) :: l -> (
+        match find_opt (fun (m, _) -> n = m) k with
+        | Some (_, k) -> Some k
+        | None -> find (w @ l) )
+    in
+    find [ g ]
+
+  let find_type (n, s) g =
+    let open Lambe_ast.Type in
+    let open List in
+    let rec find = function
+      | [] -> None
+      | (Gamma (_, t, _, w) as g') :: l -> (
+        match find_opt (fun (m, _) -> n = m) t with
+        | Some (_, t) -> Some (if g = g' then t else Use (Trait (g', s), t, s))
+        | None -> find (w @ l) )
+    in
+    find [ g ]
 end
 
 module Substitution = struct
@@ -32,7 +71,6 @@ module Substitution = struct
       | Arrow (t1, t2, s) -> Arrow (subs t1, subs t2, s)
       | Invoke (t1, t2, s) -> Invoke (subs t1, subs t2, s)
       | Apply (t1, t2, s) -> Apply (subs t1, subs t2, s)
-      | Access (t1, n, s) -> Access (subs t1, n, s)
       | Union (t1, t2, s) -> Union (subs t1, subs t2, s)
       | Lambda (a, _, _, _) when a = v -> t
       | Lambda (a, k, t1, s) -> Lambda (a, k, subs t1, s)
@@ -44,20 +82,16 @@ module Substitution = struct
       | Rec (a, t1, s) -> Rec (a, subs t1, s)
       | Const (a, l1, s) -> Const (a, map subst_field l1, s)
       | Trait (gamma, s) -> Trait (subst_gamma gamma, s)
+      | Use (t1, t2, s) -> Use (subs t1, subs t2, s)
     in
     subs t
 end
 
 module Checker = struct
-  let ( <$> ) = Option.map
-
-  let ( >>= ) = Option.bind
-
   let rec check g t k =
     let open Kind.Checker.Operator in
     let print_check = Lambe_render.Type.Render.check Format.std_formatter in
-    let _ = print_check t k
-    and _ = print_string "\n" in
+    let _ = print_check t k in
     Option.fold ~none:false ~some:(fun k' -> k' <? k) (synthetize g t)
 
   and synthetize g t =
@@ -66,25 +100,16 @@ module Checker = struct
     let open Kind.Checker.Operator in
     let open List in
     match t with
-    | Variable (n, _) ->
-      snd <$> find_opt (fun (m, _) -> n = m) Gamma.Helpers.(k_get g)
+    | Variable (n, _) -> Finder.find_kind n g
     | Arrow (_, _, s) -> Some (K.Type s)
     | Invoke (_, _, s) -> Some (K.Type s)
     | Apply (t1, t2, _) -> (
       synthetize g t1
       >>= function
       | K.Arrow (k', k, _) when check g t2 k' -> Some k | _ -> None )
-    | Access (t1, n, _) -> (
+    | Union (t1, t2, _) ->
       synthetize g t1
-      >>= function
-      | Trait (l, _) -> snd <$> find_opt (fun (m, _) -> n = m) l | _ -> None )
-    | Union (t1, t2, _) -> (
-      let r1 = synthetize g t1 in
-      let r2 = r1 >>= (fun _ -> synthetize g t2) in
-      match r1, r2 with
-      | Some k1, Some k2 when k1 <? k2 -> Some k2
-      | Some k1, Some k2 when k2 <? k1 -> Some k1
-      | _ -> None )
+      >>= (fun k1 -> (fun k2 -> if k1 <? k2 then k2 else k1) <$> synthetize g t2)
     | Lambda (n, k, t, s) ->
       let g = Gamma.(Helpers.k_set [ n, k ] + g) in
       (fun k' -> K.Arrow (k, k', s)) <$> synthetize g t
@@ -108,39 +133,77 @@ module Checker = struct
       then
         Some (K.Trait (fold_left (fun k (Gamma (k', _, _, _)) -> k @ k') k w, l))
       else None
+    | Use (t1, t2, _) -> (
+      synthetize g t1
+      >>= function
+      | Trait (l, _) -> synthetize Gamma.(Helpers.k_set l) t2 | _ -> None )
 
-  let rec reduce g t =
-    let open Lambe_ast.Type in
-    let open Gamma in
+  type level =
+    | Zero
+    | One
+
+  let reduce g t =
     let open Substitution in
-    let open List in
-    let rec find_type n = function
-      | [] -> None
-      | Gamma (_, t, _, _) :: l -> (
-        match find_opt (fun (m, _) -> n = m) t with
-        | Some t -> Some t
-        | None -> find_type n l )
+    let open Lambe_ast.Type in
+    let depth = ref 0 in
+    let print_reduce = Lambe_render.Type.Render.reduce Format.std_formatter in
+    let rec reduce g t level =
+      let _ = depth := !depth + 1 in
+      let _ = print_int !depth in
+      let _ = print_string (match level with Zero -> " (0)" | _ -> " (1)") in
+      let _ = print_string " > " in
+      let _ = print_reduce t (Some (Variable ("?", TypeContext.get t))) in
+      let result =
+        match t with
+        | Variable (n, s) when level = Zero ->
+          Finder.find_type (n, s) g >>= (fun t -> reduce g t One)
+        | Variable (_, _) when level = One ->
+          Some (Option.fold ~none:t ~some:Fun.id (reduce g t Zero))
+        | Apply (t1, t2, _) -> (
+          reduce g t1 One
+          >>= function
+          | Lambda (n, k, t1', _) when check g t2 k ->
+            reduce g (substitute n t2 t1') One
+          | _ -> None )
+        | Use ((Trait (g', _) as t1), (Variable (_, _) as v), s)
+          when level = Zero ->
+          reduce g' v Zero >>= (fun t2 -> reduce g (Use (t1, t2, s)) One)
+        | Use (Trait (_, _), Variable (_, _), _) when level = One ->
+          Some (Option.fold ~none:t ~some:Fun.id (reduce g t Zero))
+        | Use ((Trait (_, _) as t), Apply (t1, t2, s'), s) ->
+          Some (Apply (Use (t, t1, s), Use (t, t2, s), s'))
+        | Use ((Trait (_, _) as t), Union (t1, t2, s'), s) ->
+          Some (Union (Use (t, t1, s), Use (t, t2, s), s'))
+        | Use ((Trait (_, _) as t), Lambda (a, k, t1, s'), s) ->
+          Some (Lambda (a, k, Use (t, t1, s), s'))
+        | Use ((Trait (_, _) as t), Arrow (t1, t2, s'), s) ->
+          Some (Arrow (Use (t, t1, s), Use (t, t2, s), s'))
+        | Use ((Trait (_, _) as t), Invoke (t1, t2, s'), s) ->
+          Some (Invoke (Use (t, t1, s), Use (t, t2, s), s'))
+        | Use ((Trait (_, _) as t), Forall (a, k, t1, s'), s) ->
+          Some (Forall (a, k, Use (t, t1, s), s'))
+        | Use ((Trait (_, _) as t), Exists (a, k, t1, s'), s) ->
+          Some (Exists (a, k, Use (t, t1, s), s'))
+        | Use ((Trait (_, _) as t), Rec (a, t1, s'), s) ->
+          Some (Rec (a, Use (t, t1, s), s'))
+        | Use (Trait (g', _), Trait (g'', _), s) ->
+          Some (Trait (Gamma.(g'' + g'), s))
+        | Use (t1, t2, s) ->
+          reduce g t1 One
+          >>= fun t1' ->
+          if t1 = t1' then Some t else reduce g (Use (t1', t2, s)) level
+        | Rec (n, t', _) when level = One -> Some (substitute n t t')
+        | t when level = One -> Some t
+        | _ -> None
+      in
+      let _ = print_int !depth in
+      let _ = print_string (match level with Zero -> " (0)" | _ -> " (1)") in
+      let _ = print_string " < " in
+      let _ = print_reduce t result in
+      result
     in
-    match t with
-    | Variable (n, _) ->
-      snd <$> find_opt (fun (m, _) -> n = m) (Helpers.t_get g)
-    | Apply (t1, t2, _) -> (
-      reduce g t1
-      >>= function
-      | Lambda (a1, k1, t1, _) ->
-        if check g t2 k1 then Some (substitute a1 t2 t1) else None
-      | _ -> None )
-    | Access (t, n, _) -> (
-      reduce g t
-      >>= function
-      | Trait (g, _) -> (
-        match find_opt (fun (m, _) -> n = m) (Helpers.t_get g) with
-        | Some (_, t) -> Some t
-        | None -> snd <$> find_type n (Helpers.w_get g) )
-      | _ -> None )
-    | _ -> Some t
+    reduce g t Zero
 
-  (* Should return a State *)
   let rec subsume g t1 t2 v =
     let module K = Lambe_ast.Kind in
     let open Lambe_ast.Type in
@@ -150,15 +213,9 @@ module Checker = struct
     let open Kind.Checker.Operator in
     let open List in
     let print_subtype = Lambe_render.Type.Render.subtype Format.std_formatter in
-    let _ = print_subtype t1 t2
-    and _ = print_string "\n" in
+    let _ = print_subtype t1 t2 in
     match t1, t2 with
     | _ when t1 = t2 -> check g t1 (K.Type (TypeContext.get t1)), v
-    (* Apply section *)
-    | t, Apply (Forall (a1, _, t1, _), t2, _) ->
-      subsume g t (substitute a1 t2 t1) v
-    | Apply (Forall (a1, _, t1, _), t2, _), t ->
-      subsume g (substitute a1 t2 t1) t v
     (* Arrow *)
     | Arrow (t1, t2, _), Arrow (t3, t4, _) ->
       let b1, v1 = subsume g t3 t1 v in
@@ -225,17 +282,18 @@ module Checker = struct
         && Gamma.(s <? s') (fun t1 t2 -> fst (subsume g t1 t2 v))
       , v )
     | t1, t2 -> (
-      match reduce g t1 with
-      | Some t1' when t1' != t1 -> subsume g t1' t2 v
-      | _ -> (
-        match reduce g t2 with
-        | Some t2' when t2' != t2 -> subsume g t1 t2' v
-        | _ -> false, v ) )
+      match reduce g t1, reduce g t2 with
+      | Some t1, Some t2 -> subsume g t1 t2 v
+      | Some t1, _ -> subsume g t1 t2 v
+      | _, Some t2 -> subsume g t1 t2 v
+      | _ -> false, v )
 
   module Operator = struct
     let ( <:?> ) t1 t2 g = check g t1 t2
 
     let ( <? ) t1 t2 c g = subsume g t1 t2 c
+
+    let ( --> ) t1 t2 g = reduce g t1 = t2
 
     let ( |- ) g f = f g
   end

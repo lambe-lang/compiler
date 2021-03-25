@@ -16,7 +16,7 @@ module Render = struct
     | Rec (n, t, _) -> Format.fprintf ppf "rec %s. %a" n pp t
     | Const (n, l, _) -> Format.fprintf ppf "data %s %a" n pp_params l
     | Trait _ -> Format.fprintf ppf "trait ..."
-    | Access (t, n, _) -> Format.fprintf ppf "(%a).%s" pp t n
+    | Use (t, t', _) -> Format.fprintf ppf "(%a).(%a)" pp t pp t'
 
   and pp_params ppf = function
     | [] -> ()
@@ -26,4 +26,11 @@ module Render = struct
   let check ppf t k = Format.fprintf ppf "(%a) :? (%a) @." pp t Kind.Render.pp k
 
   let subtype ppf t1 t2 = Format.fprintf ppf "(%a) <? (%a) @." pp t1 pp t2
+
+  let reduce ppf t ot =
+    let pp_option ppf = function
+      | None -> Format.fprintf ppf "error"
+      | Some t -> pp ppf t
+    in
+    Format.fprintf ppf "(%a) --> (%a) @." pp t pp_option ot
 end

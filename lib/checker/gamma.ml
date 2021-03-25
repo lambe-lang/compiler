@@ -27,6 +27,8 @@ module Helpers = struct
   let s_set = function s -> Gamma ([], [], s, [])
 
   let w_get = function Gamma (_, _, _, w) -> w
+
+  let w_set = function w -> Gamma ([], [], [], w)
 end
 
 let empty = Monoid.neutral

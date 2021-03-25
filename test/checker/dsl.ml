@@ -21,8 +21,6 @@ module Types = struct
 
   let ( <|> ) t t' = Type.Union (t, t', ())
 
-  let ( @ ) t n = Type.Access (t, n, ())
-
   let lambda (n, k) t = Type.Lambda (n, k, t, ())
 
   let forall (n, k) t = Type.Forall (n, k, t, ())
@@ -34,6 +32,8 @@ module Types = struct
   let data c l = Type.Const (c, l, ())
 
   let trait k t s w = Type.Trait (gamma k t s w, ())
+
+  let ( @ ) t t' = Type.Use (t, t', ())
 end
 
 module Exprs = struct

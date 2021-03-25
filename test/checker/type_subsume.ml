@@ -190,20 +190,20 @@ let test_case_018 () =
     computed
 
 let test_case_019 () =
-  let expected = true
+  let expected = false
   and computed, _ =
     K.(Helpers.k_set [ "a", star ] + empty)
     |- (forall ("x", K.star) (v "x") <$> v "a" <? v "a") Variables.create
   in
-  Alcotest.(check bool) "should accept (forall(x:*).x) a <? a" expected computed
+  Alcotest.(check bool) "should reject (forall(x:*).x) a <? a" expected computed
 
 let test_case_020 () =
-  let expected = true
+  let expected = false
   and computed, _ =
     K.(Helpers.k_set [ "a", star ] + empty)
     |- (v "a" <? (forall ("x", K.star) (v "x") <$> v "a")) Variables.create
   in
-  Alcotest.(check bool) "should accept a <? (forall(x:*).x) a" expected computed
+  Alcotest.(check bool) "should reject a <? (forall(x:*).x) a" expected computed
 
 let test_case_021 () =
   let expected = true
@@ -231,7 +231,7 @@ let test_case_023 () =
   let expected = true
   and computed, _ =
     K.(Helpers.k_set [ "a", star ] + empty)
-    |- (v "a" <? trait [] [ "n", v "a" ] [] [] @ "n") Variables.create
+    |- (v "a" <? trait [] [ "n", v "a" ] [] [] @ v "n") Variables.create
   in
   Alcotest.(check bool)
     "should accept a <? trait { type n = a }.n" expected computed
@@ -240,7 +240,7 @@ let test_case_024 () =
   let expected = true
   and computed, _ =
     K.(Helpers.k_set [ "a", star ] + empty)
-    |- (trait [] [ "n", v "a" ] [] [] @ "n" <? v "a") Variables.create
+    |- (trait [] [ "n", v "a" ] [] [] @ v "n" <? v "a") Variables.create
   in
   Alcotest.(check bool)
     "should accept trait { type n = a }.n <? a" expected computed
@@ -250,7 +250,7 @@ let test_case_025 () =
   and computed, _ =
     Helpers.k_set [ "a", K.star ]
     + Helpers.t_set [ "b", trait [] [ "n", v "a" ] [] [] ]
-    |- (v "a" <? v "b" @ "n") Variables.create
+    |- (v "a" <? v "b" @ v "n") Variables.create
   in
   Alcotest.(check bool)
     "should accept b=trait { type n = a } |- a <? b.n" expected computed
@@ -260,7 +260,7 @@ let test_case_026 () =
   and computed, _ =
     Helpers.k_set [ "a", K.star ]
     + Helpers.t_set [ "b", trait [] [ "n", v "a" ] [] [] ]
-    |- (v "b" @ "n" <? v "a") Variables.create
+    |- (v "b" @ v "n" <? v "a") Variables.create
   in
   Alcotest.(check bool)
     "should accept b=trait { type n = a } |- b.n <? a" expected computed
@@ -270,7 +270,7 @@ let test_case_027 () =
   and computed, _ =
     Helpers.k_set [ "a", K.star ]
     + Helpers.t_set [ "b", trait [] [] [] [ gamma [] [ "n", v "a" ] [] [] ] ]
-    |- (v "b" @ "n" <? v "a") Variables.create
+    |- (v "b" @ v "n" <? v "a") Variables.create
   in
   Alcotest.(check bool)
     "should accept b=trait { type n = a } |- b.n <? a" expected computed
@@ -280,7 +280,7 @@ let test_case_028 () =
   and computed, _ =
     Helpers.k_set [ "a", K.star ]
     + Helpers.t_set [ "b", trait [] [] [] [ gamma [] [ "n", v "a" ] [] [] ] ]
-    |- (v "a" <? v "b" @ "n") Variables.create
+    |- (v "a" <? v "b" @ v "n") Variables.create
   in
   Alcotest.(check bool)
     "should accept b=trait { type n = a } |- a <? b.n" expected computed
@@ -290,7 +290,7 @@ let test_case_029 () =
   and computed, _ =
     Helpers.k_set [ "a", K.star ]
     + Helpers.t_set [ "b", trait [] [] [] [ gamma [] [ "m", v "a" ] [] [] ] ]
-    |- (v "a" <? v "b" @ "n") Variables.create
+    |- (v "a" <? v "b" @ v "n") Variables.create
   in
   Alcotest.(check bool)
     "should reject b=trait { type m = a } |- a <? b.n" expected computed
@@ -348,10 +348,11 @@ let test_cases =
         test_case_017
     ; test_case "Reject exists(x:*->*).x -> a <? exists(y:*).y -> a" `Quick
         test_case_018
-    ; test_case "Accept (forall(x:*).x) a <? a" `Quick test_case_019
-    ; test_case "Accept a <? (forall(x:*).x) a" `Quick test_case_020
+    ; test_case "Reject (forall(x:*).x) a <? a" `Quick test_case_019
+    ; test_case "Reject a <? (forall(x:*).x) a" `Quick test_case_020
     ; test_case "Accept b=(lambda(x:*).x) |- b a <? a" `Quick test_case_021
     ; test_case "Accept b=(lamda(x:*).x) |- a <? b a" `Quick test_case_022
+      (*
     ; test_case "Accept a <? trait { type n = a }.n" `Quick test_case_023
     ; test_case "Accept trait { type n = a }.n <? a" `Quick test_case_024
     ; test_case "Accept b=trait { type n = a } |- a <? b.n" `Quick test_case_025
@@ -360,6 +361,7 @@ let test_cases =
         test_case_027
     ; test_case "Accept b=trait with { type n = a } |- a <? b.n" `Quick
         test_case_028
+    *)
     ; test_case "Reject b=trait with { type m = a } |- a <? b.n" `Quick
         test_case_029
     ; test_case "Accept forall(x:{n:*}).x <? forall(y:{n:*,m:*).y" `Quick

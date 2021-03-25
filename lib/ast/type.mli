@@ -38,7 +38,7 @@ type 'a t =
   | Rec of Common.var * 'a t * 'a
   | Const of Common.id * 'a t Common.dictionary * 'a
   | Trait of 'a gamma * 'a
-  | Access of 'a t * Common.id * 'a
+  | Use of 'a t * 'a t * 'a
 
 and 'a gamma =
   | Gamma of

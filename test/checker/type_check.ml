@@ -10,6 +10,13 @@ let test_case_000 () =
   in
   Alcotest.(check bool) "should accept a :? *" expected computed
 
+let test_case_000_a () =
+  let expected = true
+  and computed =
+    K.(Helpers.w_set [ Helpers.k_set [ "a", star ] ]) |- (v "a" <:?> K.star)
+  in
+  Alcotest.(check bool) "should accept a :? *" expected computed
+
 let test_case_001 () =
   let expected = true
   and computed =
@@ -43,7 +50,7 @@ let test_case_005 () =
   let expected = true
   and computed =
     K.(Helpers.k_set [ "a", trait [ "n", star ] ] + empty)
-    |- (v "a" @ "n" <:?> K.star)
+    |- (v "a" @ v "n" <:?> K.star)
   in
   Alcotest.(check bool) "should accept a.n :? {n:*}" expected computed
 
@@ -122,7 +129,7 @@ let test_case_014 () =
 let test_case_015 () =
   let expected = true
   and computed =
-    K.(Helpers.k_set [ "b", trait [ "n", star ] ]) |- (v "b" @ "n" <:?> K.star)
+    K.(Helpers.k_set [ "b", trait [ "n", star ] ]) |- (v "b" @ v "n" <:?> K.star)
   in
   Alcotest.(check bool)
     "should accept b=trait { n:* } |- b.n:*" expected computed
@@ -131,7 +138,7 @@ let test_case_016 () =
   let expected = true
   and computed =
     K.(Helpers.k_set [ "b", trait [ "n", star; "m", star ] ])
-    |- (v "b" @ "n" <:?> K.star)
+    |- (v "b" @ v "n" <:?> K.star)
   in
   Alcotest.(check bool)
     "should accept b=trait { n:*, m:* } |- b.n:*" expected computed
@@ -139,7 +146,7 @@ let test_case_016 () =
 let test_case_017 () =
   let expected = false
   and computed =
-    K.(Helpers.k_set [ "b", trait [ "m", star ] ]) |- (v "b" @ "n" <:?> K.star)
+    K.(Helpers.k_set [ "b", trait [ "m", star ] ]) |- (v "b" @ v "n" <:?> K.star)
   in
   Alcotest.(check bool)
     "should reject b=trait { m:* } |- b.n:*" expected computed
@@ -156,6 +163,7 @@ let test_cases =
   ( "Type check"
   , [
       test_case "Accept a :? *" `Quick test_case_000
+    ; test_case "Accept a :? *" `Quick test_case_000_a
     ; test_case "Accept a -> a :? *" `Quick test_case_001
     ; test_case "Accept a @> a :? *" `Quick test_case_002
     ; test_case "Accept a b :? *" `Quick test_case_003
