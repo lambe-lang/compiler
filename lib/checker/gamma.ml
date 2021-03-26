@@ -3,14 +3,12 @@ open Lambe_ast.Type
 module Monoid = struct
   let neutral = Gamma ([], [], [], [])
 
-  let combine (Gamma (k, t, s, w)) (Gamma (k', t', s', w')) =
-    Gamma (k @ k', t @ t', s @ s', w @ w')
-
-  (* LAWS
-     combine neutral g           = g
-     combine g neutral           = g
-     combine g1 (combine g2 g3)  = (combine g1 g2) g3)
-  *)
+  let combine (Gamma (k, t, s, w) as g) g' =
+    if g = neutral
+    then g'
+    else if g' = neutral
+    then g
+    else Gamma (k, t, s, w @ [ g' ])
 end
 
 module Helpers = struct

@@ -8,4 +8,6 @@ module Render : sig
   val subtype : Format.formatter -> 'a Type.t -> 'a Type.t -> unit
 
   val pp : Format.formatter -> 'a Type.t -> unit
+
+  val pp_gamma : Format.formatter -> 'a Type.gamma -> unit
 end

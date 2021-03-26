@@ -24,8 +24,7 @@ let test_case_002 () =
   let expected = true
   and computed =
     Helpers.t_set [ "a", trait [ "c", K.star ] [ "b", v "c" ] [] [] ]
-    |- (v "a" @ v "b")
-       --> Some (trait [ "c", K.star ] [ "b", v "c" ] [] [] @ v "c")
+    |- (v "a" @ v "b") --> Some (v "c")
   in
   Alcotest.(check bool)
     "Accept a:* |- (lambda (v:*).v) a --> a" expected computed

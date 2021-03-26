@@ -113,18 +113,19 @@ let test_case_012 () =
 let test_case_013 () =
   let expected = true
   and computed =
-    K.(Helpers.k_set [ "b", star ] + empty) |- (mu "x" (v "x") <:?> K.star)
+    K.(Helpers.k_set [ "b", star ] + empty)
+    |- (mu ("x", K.star) (v "x") <:?> K.star)
   in
-  Alcotest.(check bool) "should accept mu (x).x :? *" expected computed
+  Alcotest.(check bool) "should accept mu(x:*).x :? *" expected computed
 
 let test_case_014 () =
   let expected = true
   and computed =
     K.(Helpers.k_set [ "b", star |-> star ] + empty)
-    |- (mu "x" (v "b" <$> v "x") <:?> K.star)
+    |- (mu ("x", K.star) (v "b" <$> v "x") <:?> K.star)
   in
   Alcotest.(check bool)
-    "should accept b:*->* |- mu (x).(b x) :? *" expected computed
+    "should accept b:*->* |- mu(x:*).(b x) :? *" expected computed
 
 let test_case_015 () =
   let expected = true

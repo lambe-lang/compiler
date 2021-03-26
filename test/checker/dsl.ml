@@ -27,7 +27,7 @@ module Types = struct
 
   let exists (n, k) t = Type.Exists (n, k, t, ())
 
-  let mu n t = Type.Rec (n, t, ())
+  let mu (n, k) t = Type.Rec (n, k, t, ())
 
   let data c l = Type.Const (c, l, ())
 

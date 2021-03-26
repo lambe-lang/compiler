@@ -35,7 +35,7 @@ type 'a t =
   | Lambda of Common.var * 'a Kind.t * 'a t * 'a
   | Forall of Common.var * 'a Kind.t * 'a t * 'a
   | Exists of Common.var * 'a Kind.t * 'a t * 'a
-  | Rec of Common.var * 'a t * 'a
+  | Rec of Common.var * 'a Kind.t * 'a t * 'a
   | Const of Common.id * 'a t Common.dictionary * 'a
   | Trait of 'a gamma * 'a
   | Use of 'a t * 'a t * 'a
