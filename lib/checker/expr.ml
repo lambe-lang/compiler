@@ -1,3 +1,27 @@
+let ( <$> ) = Option.map
+(* let ( >>= ) ma f = Option.bind ma f in *)
+
+(*
+    Provides basic functions used when a type defnition or kind definition
+    should be retrieved from Gamma. This operation is performed with a
+    depth first seach strategy.
+*)
+module Finder = struct
+  let find_signature n g =
+    let print_gamma = Lambe_render.Type.Render.pp_gamma Format.std_formatter in
+    let _ = print_gamma g in
+    let open Lambe_ast.Type in
+    let open List in
+    let rec find = function
+      | [] -> None
+      | Gamma (_, _, s, w) :: l -> (
+        match find_opt (fun (m, _) -> n = m) s with
+        | Some (_, t) -> Some t
+        | None -> find (w @ l) )
+    in
+    find [ g ]
+end
+
 module Substitution = struct
   (* Substituste v by r in t *)
   let substitute v r t =
@@ -10,7 +34,6 @@ module Substitution = struct
       | Lambda (a, e1, s) -> Lambda (a, subs e1, s)
       | Method (e1, s) -> Method (subs e1, s)
       | Apply (e1, e2, s) -> Apply (subs e1, subs e2, s)
-      | Invoke (e1, e2, s) -> Invoke (subs e1, subs e2, s)
       | Bind (a, _, _, _, _) when v = a -> t
       | Bind (a, t1, e1, e2, s) -> Bind (a, t1, subs e1, subs e2, s)
       | Use (e1, e2, s) -> Use (subs e1, subs e2, s)
@@ -23,47 +46,67 @@ module Substitution = struct
 end
 
 module Checker = struct
-  let ( <$> ) = Option.map
-
   let rec check g e t v =
     let open Context in
     let open Lambe_ast.Expr in
     let open Type.Checker.Operator in
     let module T = Lambe_ast.Type in
     let open List in
-    (* let ( >>= ) ma f = Option.bind ma f in *)
-    match e with
-    | Lambda (a, e, s) -> (
-      let n, v = Variables.fresh v in
-      let e = Substitution.substitute a (Variable (n, s)) e in
-      match Type.Checker.reduce g t with
-      | Some T.(Arrow (t1, t2, _)) ->
-        check Gamma.(Helpers.s_set [ n, t1 ] + g) e t2 v
-      | _ -> false, v )
-    | Method (e, _) -> (
-      match Type.Checker.reduce g t with
-      | Some T.(Invoke (t1, t2, _)) ->
-        check Gamma.(Helpers.s_set [ "self", t1 ] + g) e t2 v
-      | _ -> false, v )
-    | _ ->
-      let r, v = synthetize g e v in
-      Option.fold ~none:(false, v) ~some:Fun.id
-        ((fun t' -> g |- (t' <? t) v) <$> r)
+    let print_check = Lambe_render.Expr.Render.check Format.std_formatter in
+    let rec check g e t v =
+      let _ = print_string " > " in
+      let _ = print_check e (Some t) in
+      let result =
+        match e with
+        | Lambda (a, e, s) -> (
+          let n, v = Variables.fresh v in
+          let e = Substitution.substitute a (Variable (n, s)) e in
+          match Type.Checker.reduce g t with
+          | Some T.(Arrow (t1, t2, _)) ->
+            check Gamma.(Helpers.s_set [ n, t1 ] + g) e t2 v
+          | _ -> false, v )
+        | Method (e, _) -> (
+          match Type.Checker.reduce g t with
+          | Some T.(Invoke (t1, t2, _)) ->
+            check Gamma.(Helpers.s_set [ "self", t1 ] + g) e t2 v
+          | _ -> false, v )
+        | _ ->
+          let r, v = synthetize g e v in
+          Option.fold ~none:(false, v) ~some:Fun.id
+            ((fun t' -> g |- (t' <? t) v) <$> r)
+      in
+      let _ = print_string " < " in
+      let _ = print_check e (Some t) in
+      result
+    in
+    check g e t v
 
   and synthetize g e v =
-    let open List in
-    (*let open Type.Checker.Operator in*)
+    let open Lambe_ast.Expr in
     let module T = Lambe_ast.Type in
-    match e with
-    | Variable (n, _) ->
-      snd <$> find_opt (fun (m, _) -> n = m) Gamma.Helpers.(s_get g), v
-    | Use (e1, e2, _) -> (
-      match synthetize g e1 v with
-      | Some T.(Trait (g', _)), v -> synthetize Gamma.(g' + g) e2 v
-      | Some T.(Const (_, l, _)), v ->
-        synthetize Gamma.(Helpers.(s_set l) + g) e2 v
-      | _ -> None, v )
-    | _ -> None, v
+    let print_check = Lambe_render.Expr.Render.check Format.std_formatter in
+    let rec synthetize g e v =
+      let _ = print_string " > " in
+      let _ = print_check e None in
+      let result =
+        match e with
+        | Variable (n, _) ->
+          let _ = print_string n
+          and _ = print_string " =? " in
+          Finder.find_signature n g, v
+        | Use (e1, e2, _) -> (
+          match synthetize g e1 v with
+          | Some T.(Trait (g', _)), v -> synthetize Gamma.(g' + g) e2 v
+          | Some T.(Const (_, l, _)), v ->
+            synthetize Gamma.(Helpers.(s_set l) + g) e2 v
+          | _ -> None, v )
+        | _ -> None, v
+      in
+      let _ = print_string " |- " in
+      let _ = print_check e (fst result) in
+      result
+    in
+    synthetize g e v
 
   module Operator = struct
     let ( <:?> ) t1 t2 s g = check g t1 t2 s

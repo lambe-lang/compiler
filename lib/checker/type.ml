@@ -174,7 +174,7 @@ module Checker = struct
           | _ -> None )
         | Rec (n, _, t', _) when level = One -> Some (substitute n t t')
         | t when level = One -> Some t
-        | _ -> None
+        | _ -> Some t
       in
       let _ = print_int !depth in
       let _ = print_string (match level with Zero -> " (0)" | _ -> " (1)") in
@@ -275,9 +275,9 @@ module Checker = struct
           , v )
         | t1, t2 -> (
           match reduce g t1, reduce g t2 with
-          | Some t1, Some t2 -> subsume g t1 t2 v
-          | Some t1, _ -> subsume g t1 t2 v
-          | _, Some t2 -> subsume g t1 t2 v
+          | Some t1', Some t2' when t1' != t1 || t2' = t2 -> subsume g t1' t2' v
+          | Some t1', _ when t1' != t1 -> subsume g t1' t2 v
+          | _, Some t2' when t2' != t2 -> subsume g t1 t2' v
           | _ -> false, v )
     in
     subsume g t1 t2 v

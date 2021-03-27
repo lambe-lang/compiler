@@ -68,7 +68,7 @@ let test_case_007 () =
     K.(Helpers.k_set [ "b", star ] + empty)
     |- (lambda ("x", K.star) (v "b") <:?> K.(star |-> star))
   in
-  Alcotest.(check bool) "should accept lambda (x:*).b :? *->*" expected computed
+  Alcotest.(check bool) "should accept lambda(x:*).b :? *->*" expected computed
 
 let test_case_008 () =
   let expected = false
@@ -76,7 +76,7 @@ let test_case_008 () =
     K.(Helpers.k_set [ "b", star ] + empty)
     |- (lambda ("x", K.star) (v "b") <:?> K.star)
   in
-  Alcotest.(check bool) "should reject lambda (x:*).b :? *" expected computed
+  Alcotest.(check bool) "should reject lambda(x:*).b :? *" expected computed
 
 let test_case_009 () =
   let expected = false
@@ -84,7 +84,7 @@ let test_case_009 () =
     K.(Helpers.k_set [ "b", star ] + empty)
     |- (forall ("x", K.star) (v "b") <:?> K.(star |-> star))
   in
-  Alcotest.(check bool) "should reject forall (x:*).b :? *->*" expected computed
+  Alcotest.(check bool) "should reject forall(x:*).b :? *->*" expected computed
 
 let test_case_010 () =
   let expected = true
@@ -92,7 +92,7 @@ let test_case_010 () =
     K.(Helpers.k_set [ "b", star ] + empty)
     |- (forall ("x", K.star) (v "b") <:?> K.star)
   in
-  Alcotest.(check bool) "should accept forall (x:*).b :? *" expected computed
+  Alcotest.(check bool) "should accept forall(x:*).b :? *" expected computed
 
 let test_case_0011 () =
   let expected = true
@@ -100,7 +100,7 @@ let test_case_0011 () =
     K.(Helpers.k_set [ "b", star ] + empty)
     |- (exists ("x", K.star) (v "b") <:?> K.star)
   in
-  Alcotest.(check bool) "should accept exists (x:*).b :? *->*" expected computed
+  Alcotest.(check bool) "should accept exists(x:*).b :? *->*" expected computed
 
 let test_case_012 () =
   let expected = false
@@ -108,7 +108,7 @@ let test_case_012 () =
     K.(Helpers.k_set [ "b", star ] + empty)
     |- (exists ("x", K.star) (v "b") <:?> K.(star |-> star))
   in
-  Alcotest.(check bool) "should accept exists (x:*).b :? *->*" expected computed
+  Alcotest.(check bool) "should accept exists(x:*).b :? *->*" expected computed
 
 let test_case_013 () =
   let expected = true
@@ -171,14 +171,14 @@ let test_cases =
     ; test_case "Reject a:* |- a a :? *" `Quick test_case_004
     ; test_case "Accept a.n :? {n:*}" `Quick test_case_005
     ; test_case "Accept a | b :? *" `Quick test_case_006
-    ; test_case "Accept lambda (x:*).b :? *->*" `Quick test_case_007
-    ; test_case "Reject lambda (x:*).b :? *" `Quick test_case_008
-    ; test_case "Reject forall (x:*).b :? *->*" `Quick test_case_009
-    ; test_case "Accept forall (x:*).b :? *" `Quick test_case_010
-    ; test_case "Accept exists (x:*).b :? *" `Quick test_case_0011
-    ; test_case "Reject exists (x:*).b :? *->*" `Quick test_case_012
-    ; test_case "Accept mu (x).x :? *" `Quick test_case_013
-    ; test_case "Accept b:*->* |- mu (x).(b x) :? *" `Quick test_case_014
+    ; test_case "Accept lambda(x:*).b :? *->*" `Quick test_case_007
+    ; test_case "Reject lambda(x:*).b :? *" `Quick test_case_008
+    ; test_case "Reject forall(x:*).b :? *->*" `Quick test_case_009
+    ; test_case "Accept forall(x:*).b :? *" `Quick test_case_010
+    ; test_case "Accept exists(x:*).b :? *" `Quick test_case_0011
+    ; test_case "Reject exists(x:*).b :? *->*" `Quick test_case_012
+    ; test_case "Accept mu(x:*).x :? *" `Quick test_case_013
+    ; test_case "Accept b:*->* |- mu(x:*).(b x) :? *" `Quick test_case_014
     ; test_case "Accept b=trait { n : * } |- b.n:*" `Quick test_case_015
     ; test_case "Accept b=trait { n : *, m:* } |- b.n:*" `Quick test_case_016
     ; test_case "Reject b=trait { m:* } |- b.n:*" `Quick test_case_017

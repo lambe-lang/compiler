@@ -22,7 +22,6 @@ type 'a t =
   | Lambda of Common.var * 'a t * 'a
   | Method of 'a t * 'a
   | Apply of 'a t * 'a t * 'a
-  | Invoke of 'a t * 'a t * 'a
   | Bind of Common.var * 'a Type.t option * 'a t * 'a t * 'a
   | Use of 'a t * 'a t * 'a
   | Trait of 'a Type.gamma * 'a t Common.dictionary * 'a
