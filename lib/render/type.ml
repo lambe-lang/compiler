@@ -3,19 +3,19 @@ module Render = struct
     let open Lambe_ast.Type in
     function
     | Variable (n, _) -> Format.fprintf ppf "%s" n
-    | Arrow (l, r, _) -> Format.fprintf ppf "(%a → %a)" pp l pp r
+    | Arrow (l, r, _) -> Format.fprintf ppf "(%a) → %a" pp l pp r
     | Invoke (l, r, _) ->
       Format.fprintf ppf "self →􏰆􏰆 %a for %a" pp r pp l
     | Union (l, r, _) -> Format.fprintf ppf "(%a | %a)" pp l pp r
     | Apply (l, r, _) -> Format.fprintf ppf "%a (%a)" pp l pp r
     | Lambda (n, k, t, _) ->
-      Format.fprintf ppf "Λ(%s:%a).(%a)" n Kind.Render.pp k pp t
+      Format.fprintf ppf "lambda(%s:%a).(%a)" n Kind.Render.pp k pp t
     | Forall (n, k, t, _) ->
-      Format.fprintf ppf "∀(%s:%a). %a" n Kind.Render.pp k pp t
+      Format.fprintf ppf "forall(%s:%a). %a" n Kind.Render.pp k pp t
     | Exists (n, k, t, _) ->
-      Format.fprintf ppf "∃(%s:%a). %a" n Kind.Render.pp k pp t
+      Format.fprintf ppf "exists(%s:%a). %a" n Kind.Render.pp k pp t
     | Rec (n, k, t, _) ->
-      Format.fprintf ppf "μ(%s:%a).(%a)" n Kind.Render.pp k pp t
+      Format.fprintf ppf "rec(%s:%a).(%a)" n Kind.Render.pp k pp t
     | Const (n, l, _) -> Format.fprintf ppf "data %s %a" n pp_params l
     | Trait (g, _) -> pp_gamma ppf g
     | Use (t, t', _) -> Format.fprintf ppf "(%a).(%a)" pp t pp t'

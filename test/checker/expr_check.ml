@@ -121,7 +121,18 @@ let test_case_011 () =
     |- (use (use (v "r") (v "v")) (v "w") <:?> T.v "int") Variables.create
   in
   Alcotest.(check bool)
-    "should accept r:data r (v:trait { sig w:int }) |- r.v.w :? int" expected
+    "should accept r:data r (v:trait { sig w:int }) |- (r.v).w :? int" expected
+    computed
+
+let test_case_012 () =
+  let expected = true
+  and computed, _ =
+    H.k_set [ "int", K.star ]
+    + H.s_set [ ("r", T.(data "r" [ "v", trait [] [] [ "w", v "int" ] [] ])) ]
+    |- (use (v "r") (use (v "v") (v "w")) <:?> T.v "int") Variables.create
+  in
+  Alcotest.(check bool)
+    "should accept r:data r (v:trait { sig w:int }) |- r.(v.w) :? int" expected
     computed
 
 let test_cases =
@@ -130,7 +141,7 @@ let test_cases =
   , [
       test_case "Accept a :? int" `Quick test_case_000
     ; test_case "Accept { x -> x } :? int -> int" `Quick test_case_001
-    ; test_case "Accept { x -> x } :? int |@> int" `Quick test_case_002
+    ; test_case "Accept {> self } :? int |@> int" `Quick test_case_002
     ; test_case "Accept r:data d (v:int) |- r :? data d (v:int)" `Quick
         test_case_003
     ; test_case "Accept r:data d (v:int) (w:int) |- r :? data d (v:int)" `Quick
@@ -146,6 +157,8 @@ let test_cases =
         test_case_009
     ; test_case "Accept r:trait { sig v:data r (w:int) ] } |- r.v.w :? int"
         `Quick test_case_010
-    ; test_case "Accept r:data r (v:trait { sig w:int }) |- r.v.w :? int" `Quick
-        test_case_011
+    ; test_case "Accept r:data r (v:trait { sig w:int }) |- (r.v).w :? int"
+        `Quick test_case_011
+    ; test_case "Accept r:data r (v:trait { sig w:int }) |- r.(v.w) :? int"
+        `Quick test_case_012
     ] )

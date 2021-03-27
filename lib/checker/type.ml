@@ -57,6 +57,22 @@ module Finder = struct
     find [ g ]
 end
 
+module Distribute = struct
+  let distribute g s =
+    let open Lambe_ast.Type in
+    function
+    | Variable (_, _) as t -> Use (g, t, s)
+    | Arrow (t1, t2, s') -> Arrow (Use (g, t1, s), Use (g, t2, s), s')
+    | Invoke (t1, t2, s') -> Invoke (Use (g, t1, s), Use (g, t2, s), s')
+    | Apply (t1, t2, s') -> Apply (Use (g, t1, s), Use (g, t2, s), s')
+    | Union (t1, t2, s') -> Union (Use (g, t1, s), Use (g, t2, s), s')
+    | Lambda (n, k, t, s') -> Lambda (n, k, Use (g, t, s), s')
+    | Forall (n, k, t, s') -> Forall (n, k, Use (g, t, s), s')
+    | Exists (n, k, t, s') -> Exists (n, k, Use (g, t, s), s')
+    | Rec (n, k, t, s') -> Rec (n, k, Use (g, t, s), s')
+    | t -> Use (g, t, s)
+end
+
 module Substitution = struct
   (* Substituste v by r in t *)
   let substitute v r t =
@@ -172,6 +188,7 @@ module Checker = struct
           >>= function
           | Trait (g', _) -> reduce g' v Zero >>= (fun t2 -> reduce g t2 One)
           | _ -> None )
+        | Use (g, t, s) -> Some (Distribute.distribute g s t)
         | Rec (n, _, t', _) when level = One -> Some (substitute n t t')
         | t when level = One -> Some t
         | _ -> Some t
