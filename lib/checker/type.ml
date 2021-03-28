@@ -43,8 +43,6 @@ module Finder = struct
     find [ g ]
 
   let find_type n g =
-    let print_gamma = Lambe_render.Type.Render.pp_gamma Format.std_formatter in
-    let _ = print_gamma g in
     let open Lambe_ast.Type in
     let open List in
     let rec find = function
@@ -156,50 +154,41 @@ module Checker = struct
       >>= function
       | Trait (l, _) -> synthetize Gamma.(Helpers.k_set l) t2 | _ -> None )
 
-  type level =
-    | Zero
-    | One
-
   let reduce g t =
     let open Substitution in
     let open Lambe_ast.Type in
     let depth = ref 0 in
     let print_reduce = Lambe_render.Type.Render.reduce Format.std_formatter in
-    let rec reduce g t level =
+    let rec reduce g t =
       let _ = depth := !depth + 1 in
       let _ = print_int !depth in
-      let _ = print_string (match level with Zero -> " (0)" | _ -> " (1)") in
       let _ = print_string " > " in
       let _ = print_reduce t (Some (Variable ("?", TypeContext.get t))) in
       let result =
         match t with
-        | Variable (n, _) when level = Zero ->
-          Finder.find_type n g >>= (fun t -> reduce g t One)
-        | Variable (_, _) when level = One ->
-          Some (Option.fold ~none:t ~some:Fun.id (reduce g t Zero))
+        | Variable (n, _) ->
+          Some (Option.fold ~none:t ~some:Fun.id (Finder.find_type n g >>= (fun t -> reduce g t)))
         | Apply (t1, t2, _) -> (
-          reduce g t1 One
+          reduce g t1
           >>= function
           | Lambda (n, k, t1', _) when check g t2 k ->
-            reduce g (substitute n t2 t1') One
+            reduce g (substitute n t2 t1')
           | _ -> None )
-        | Use (t1, (Variable (_, _) as v), _) when level = Zero -> (
-          reduce g t1 One
+        | Use (t1, (Variable (_, _) as v), _) -> (
+          reduce g t1
           >>= function
-          | Trait (g', _) -> reduce g' v Zero >>= (fun t2 -> reduce g t2 One)
+          | Trait (g', _) -> reduce g' v >>= (fun t2 -> reduce g t2)
           | _ -> None )
         | Use (g, t, s) -> Some (Distribute.distribute g s t)
-        | Rec (n, _, t', _) when level = One -> Some (substitute n t t')
-        | t when level = One -> Some t
+        | Rec (n, _, t', _) -> Some (substitute n t t')
         | _ -> Some t
       in
       let _ = print_int !depth in
-      let _ = print_string (match level with Zero -> " (0)" | _ -> " (1)") in
       let _ = print_string " < " in
       let _ = print_reduce t result in
       result
     in
-    reduce g t Zero
+    reduce g t
 
   let subsume g t1 t2 v =
     let inc t = t := !t + 1 in
@@ -292,9 +281,9 @@ module Checker = struct
           , v )
         | t1, t2 -> (
           match reduce g t1, reduce g t2 with
-          | Some t1', Some t2' when t1' != t1 || t2' = t2 -> subsume g t1' t2' v
-          | Some t1', _ when t1' != t1 -> subsume g t1' t2 v
-          | _, Some t2' when t2' != t2 -> subsume g t1 t2' v
+          | Some t1', Some t2' when t1' != t1 || t2' != t2 -> subsume g t1' t2' v
+          | Some t1', None when t1' != t1 -> subsume g t1' t2 v
+          | None, Some t2' when t2' != t2 -> subsume g t1 t2' v
           | _ -> false, v )
     in
     subsume g t1 t2 v
