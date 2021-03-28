@@ -79,7 +79,14 @@ module Checker = struct
     in
     check g e t v
 
-  and synthetize g e v = synthetize_variable g e v
+  and synthetize g e v =
+    let print_check = Lambe_render.Expr.Render.check Format.std_formatter in
+    let _ = print_string " > " in
+    let _ = print_check e None in
+    let result = synthetize_variable g e v in
+    let _ = print_string " < " in
+    let _ = print_check e (fst result) in
+    result
 
   (** Private synthetize functions **)
 
