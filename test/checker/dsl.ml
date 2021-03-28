@@ -45,9 +45,7 @@ module Exprs = struct
 
   let ( <$> ) e e' = Expr.Apply (e, e', ())
 
-  let bind v e e' = Expr.Bind (v, None, e, e', ())
-
-  let bindT v t e e' = Expr.Bind (v, Some t, e, e', ())
+  let bind v e e' = Expr.Bind (v, e, e', ())
 
   let use e e' = Expr.Use (e, e', ())
 

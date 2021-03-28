@@ -5,12 +5,10 @@ module Render = struct
     | Variable (n, _) -> Format.fprintf ppf "%s" n
     | Lambda ("_", e, _) -> Format.fprintf ppf "{ %a }" pp e
     | Lambda (n, e, _) -> Format.fprintf ppf "{ %s -> %a }" n pp e
-    | Method (e, _) -> Format.fprintf ppf "{> %a }" pp e
+    | Method (e, _) -> Format.fprintf ppf "@{ %a }" pp e
     | Apply (e1, e2, _) -> Format.fprintf ppf "%a (%a)" pp e1 pp e2
-    | Bind (n, None, e1, e2, _) ->
+    | Bind (n, e1, e2, _) ->
       Format.fprintf ppf "let %s = %a in %a" n pp e1 pp e2
-    | Bind (n, Some t, e1, e2, _) ->
-      Format.fprintf ppf "let %s : %a = %a in %a" n Type.Render.pp t pp e1 pp e2
     | Use (e1, e2, _) -> Format.fprintf ppf "(%a).(%a)" pp e1 pp e2
     | Trait (g, d, _) -> pp_gamma ppf (g, d)
     | When (n, l, _) -> Format.fprintf ppf "when %s %a" n pp_when l
