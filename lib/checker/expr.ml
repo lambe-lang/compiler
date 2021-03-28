@@ -1,5 +1,7 @@
 let ( <$> ) = Option.map
-(* let ( >>= ) ma f = Option.bind ma f in *)
+
+let ( <*> ) f a = (match f with Some f -> f <$> a | None -> None)
+(* let ( >>= ) ma f = Option.bind ma f *)
 
 (*
     Provides basic functions used when a type defnition or kind definition
@@ -148,7 +150,45 @@ module Checker = struct
       Option.fold ~none:(None, v)
         ~some:(fun t1 -> synthetize Gamma.(Helpers.s_set [ n, t1 ] + g) e2 v')
         r
+    | _ -> synthetize_when g e v
+
+  and synthetize_when g e v =
+    let open Lambe_ast.Expr in
+    let module T = Lambe_ast.Type in
+    match e with
+    | When (n, l, s) ->
+      let tn, v' = synthetize g (Variable (n, s)) v in
+      Option.fold ~none:(None, v)
+        ~some:(fun t -> synthetize_cases g (n, s) t l v')
+        tn
     | _ -> None, v
+
+  and synthetize_cases g (n, s) t l v =
+    let open Type.Checker.Operator in
+    let module T = Lambe_ast.Type in
+    match l with
+    | [] -> None, v
+    | [ (tc, e) ] ->
+      if fst (g |- (tc <? t) v)
+      then synthetize Gamma.(Helpers.s_set [ n, tc ] + g) e v
+      else None, v
+    | c :: l ->
+      let rc, v' = synthetize_cases g (n, s) t [ c ] v in
+      let rl, v' =
+        Option.fold ~none:(None, v)
+          ~some:(fun _ -> synthetize_cases g (n, s) t l v')
+          rc
+      in
+      Option.fold ~none:(None, v)
+        ~some:(fun r -> Some r, v')
+        ( (fun tl tr ->
+            if fst (g |- (tl <? tr) v')
+            then tr
+            else if fst (g |- (tr <? tl) v')
+            then tl
+            else T.Union (tl, tr, s))
+        <$> rc
+        <*> rl )
 
   module Operator = struct
     let ( <:?> ) t1 t2 s g = check g t1 t2 s

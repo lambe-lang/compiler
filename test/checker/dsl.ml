@@ -49,7 +49,7 @@ module Exprs = struct
 
   let use e e' = Expr.Use (e, e', ())
 
-  let switchType v l = Expr.When (v, l, ())
+  let case v l = Expr.When (v, l, ())
 
   let trait g l = Expr.Trait (g, l, ())
 

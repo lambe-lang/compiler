@@ -160,7 +160,7 @@ let test_case_015 () =
     |- (v "r" <$> v "a" <:?> T.(v "int")) Variables.create
   in
   Alcotest.(check bool)
-    "should accept r: int -> int, a : int |- r a :? int" expected computed
+    "should accept r: int -> int, a:int |- r a :? int" expected computed
 
 let test_case_016 () =
   let expected = false
@@ -170,7 +170,7 @@ let test_case_016 () =
     |- (v "r" <$> v "a" <:?> T.(v "int")) Variables.create
   in
   Alcotest.(check bool)
-    "should reject r: string -> int, a : int |- r a :? int" expected computed
+    "should reject r: string -> int, a:int |- r a :? int" expected computed
 
 let test_case_017 () =
   let expected = true
@@ -180,7 +180,7 @@ let test_case_017 () =
     |- (v "a" <$> v "r" <:?> T.(v "int")) Variables.create
   in
   Alcotest.(check bool)
-    "should accept r: int |@> int, a : int |- a r :? int" expected computed
+    "should accept r: int |@> int, a:int |- a r :? int" expected computed
 
 let test_case_018 () =
   let expected = false
@@ -190,7 +190,7 @@ let test_case_018 () =
     |- (v "a" <$> v "r" <:?> T.(v "int")) Variables.create
   in
   Alcotest.(check bool)
-    "should Reject r: string => int, a : int |- a r :? int" expected computed
+    "should Reject r: string => int, a:int |- a r :? int" expected computed
 
 let test_case_019 () =
   let expected = true
@@ -200,7 +200,7 @@ let test_case_019 () =
     |- (bind "f" (v "r") (v "f" <$> v "a") <:?> T.(v "int")) Variables.create
   in
   Alcotest.(check bool)
-    "should accept r: int -> int, a : int |- let f = r in f a :? int" expected
+    "should accept r: int -> int, a:int |- let f = r in f a :? int" expected
     computed
 
 let test_case_020 () =
@@ -211,8 +211,42 @@ let test_case_020 () =
     |- (bind "f" (v "r") (v "a" <$> v "f") <:?> T.(v "int")) Variables.create
   in
   Alcotest.(check bool)
-    "should accept r: int => int, a : int |- let f = r in a f :? int" expected
+    "should accept r: int => int, a:int |- let f = r in a f :? int" expected
     computed
+
+let test_case_021 () =
+  let expected = true
+  and computed, _ =
+    H.k_set [ "int", K.star; "string", K.star ] + H.s_set [ "a", T.v "int" ]
+    |- (case "a" [ T.v "int", v "a" ] <:?> T.v "int") Variables.create
+  in
+  Alcotest.(check bool)
+    "should accept a:int |- when a is int -> a :? int" expected computed
+
+let test_case_022 () =
+  let expected = true
+  and computed, _ =
+    H.k_set [ "int", K.star; "string", K.star ]
+    + H.s_set [ ("a", T.(v "int" <|> v "string")) ]
+    |- (case "a" [ T.v "int", v "a" ] <:?> T.v "int") Variables.create
+  in
+  Alcotest.(check bool)
+    "should accept a:int | string |- when a is int -> a :? int" expected
+    computed
+
+let test_case_023 () =
+  let expected = true
+  and computed, _ =
+    H.k_set [ "int", K.star; "string", K.star ]
+    + H.s_set [ ("a", T.(v "int" <|> v "string")) ]
+    |- ( case "a" [ T.v "int", v "a"; T.v "string", v "a" ]
+       <:?> T.(v "int" <|> v "string") )
+         Variables.create
+  in
+  Alcotest.(check bool)
+    "should accept a:int | string |- when a is int -> a is string -> a :? int \
+     | string"
+    expected computed
 
 let test_cases =
   let open Alcotest in
@@ -241,18 +275,22 @@ let test_cases =
     ; test_case "Accept r:data r (v:trait { sig w:int }) |- r.(v.w) :? int"
         `Quick test_case_012
     ; test_case "Accept r:(lambda(x:*).x) int |- r :? int" `Quick test_case_013
-    ; test_case "Accept r: int -> int, a : int |- r a :? int" `Quick
-        test_case_014
-    ; test_case "Reject r: string -> int, a : int |- r a :? int" `Quick
+    ; test_case "Accept r: int -> int, a:int |- r a :? int" `Quick test_case_014
+    ; test_case "Reject r: string -> int, a:int |- r a :? int" `Quick
         test_case_015
-    ; test_case "Accept r: int => int, a : int |- a r :? int" `Quick
-        test_case_016
-    ; test_case "Reject r: string => int, a : int |- a r :? int" `Quick
+    ; test_case "Accept r: int => int, a:int |- a r :? int" `Quick test_case_016
+    ; test_case "Reject r: string => int, a:int |- a r :? int" `Quick
         test_case_017
-    ; test_case "Accept r: string -> int, a : int |- a r :? int" `Quick
+    ; test_case "Accept r: string -> int, a:int |- a r :? int" `Quick
         test_case_018
-    ; test_case "Accept r: int -> int, a : int |- let f = r in f a :? int"
-        `Quick test_case_019
-    ; test_case "accept r: int => int, a : int |- let f = r in a f :? int"
-        `Quick test_case_020
+    ; test_case "Accept r: int -> int, a:int |- let f = r in f a :? int" `Quick
+        test_case_019
+    ; test_case "accept r: int => int, a:int |- let f = r in a f :? int" `Quick
+        test_case_020
+    ; test_case "Accept a:int |- when a is int -> a :? int" `Quick test_case_021
+    ; test_case "Accept a:int|string |- when a is int -> a :? int" `Quick
+        test_case_022
+    ; test_case
+        "Accept a:int|string |- when a is int -> a is string -> a :? int|string"
+        `Quick test_case_023
     ] )
