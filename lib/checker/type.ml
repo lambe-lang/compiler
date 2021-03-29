@@ -157,38 +157,27 @@ module Checker = struct
   let reduce g t =
     let open Substitution in
     let open Lambe_ast.Type in
-    let depth = ref 0 in
-    let print_reduce = Lambe_render.Type.Render.reduce Format.std_formatter in
+    (* TODO(didier) first is Ugly -> remove it *)
     let rec reduce g t first =
-      let _ = depth := !depth + 1 in
-      let _ = print_int !depth in
-      let _ = print_string " > " in
-      let _ = print_reduce t (Some (Variable ("?", TypeContext.get t))) in
-      let result =
-        match t with
-        | Variable (n, _) ->
-          Some
-            (Option.fold ~none:t ~some:Fun.id
-               (Finder.find_type n g >>= (fun t -> reduce g t first)) )
-        | Apply (t1, t2, _) -> (
-          reduce g t1 false
-          >>= function
-          | Lambda (n, k, t1', _) when check g t2 k ->
-            reduce g (substitute n t2 t1') first
-          | _ -> None )
-        | Use (t1, (Variable (_, _) as v), _) -> (
-          reduce g t1 first
-          >>= function
-          | Trait (g', _) -> reduce g' v first >>= (fun t2 -> reduce g t2 first)
-          | _ -> None )
-        | Use (g, t, s) -> Some (Distribute.distribute g s t)
-        | Rec (n, _, t', _) when first = false -> Some (substitute n t t')
-        | _ -> Some t
-      in
-      let _ = print_int !depth in
-      let _ = print_string " < " in
-      let _ = print_reduce t result in
-      result
+      match t with
+      | Variable (n, _) ->
+        Some
+          (Option.fold ~none:t ~some:Fun.id
+             (Finder.find_type n g >>= (fun t -> reduce g t first)) )
+      | Apply (t1, t2, _) -> (
+        reduce g t1 false
+        >>= function
+        | Lambda (n, k, t1', _) when check g t2 k ->
+          reduce g (substitute n t2 t1') first
+        | _ -> None )
+      | Use (t1, (Variable (_, _) as v), _) -> (
+        reduce g t1 first
+        >>= function
+        | Trait (g', _) -> reduce g' v first >>= (fun t2 -> reduce g t2 first)
+        | _ -> None )
+      | Use (g, t, s) -> Some (Distribute.distribute g s t)
+      | Rec (n, _, t', _) when first = false -> Some (substitute n t t')
+      | _ -> Some t
     in
     reduce g t true
 
@@ -196,6 +185,7 @@ module Checker = struct
     let open Context in
     let module K = Lambe_ast.Kind in
     let print_subtype = Lambe_render.Type.Render.subtype Format.std_formatter in
+    let _ = print_string " Subsume > " in
     let _ = print_subtype t1 t2 in
     if t1 = t2
     then check g t1 (K.Type (TypeContext.get t1)), v

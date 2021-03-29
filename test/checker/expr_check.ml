@@ -248,6 +248,17 @@ let test_case_023 () =
      | string"
     expected computed
 
+let test_case_024 () =
+  let expected = true
+  and computed, _ =
+    empty
+    |- ( lambda "i" (v "i") <:?> T.(forall ("a", K.star) (v "a" |-> v "a")) )
+         Variables.create
+  in
+  Alcotest.(check bool)
+    "should accept lambda(v).v : forall (a:*).(a -> a)"
+    expected computed
+
 let test_cases =
   let open Alcotest in
   ( "Expression check"
@@ -293,4 +304,7 @@ let test_cases =
     ; test_case
         "Accept a:int|string |- when a is int -> a is string -> a :? int|string"
         `Quick test_case_023
+    ; test_case
+        "Accept lambda(v).v : forall (a:*).(a -> a)"
+        `Quick test_case_024
     ] )
