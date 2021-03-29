@@ -197,9 +197,7 @@ module Checker = struct
     let module K = Lambe_ast.Kind in
     let print_subtype = Lambe_render.Type.Render.subtype Format.std_formatter in
     let _ = print_subtype t1 t2 in
-    if Runtime.depth v > 20
-    then false, v
-    else if t1 = t2
+    if t1 = t2
     then check g t1 (K.Type (TypeContext.get t1)), v
     else subsume_reduce_left g t1 t2 (Runtime.incr v)
 
@@ -261,10 +259,26 @@ module Checker = struct
         let n, v = Variables.fresh v in
         let t1 = substitute a1 (Variable (n, s1)) t1 in
         let t2 = substitute a2 (Variable (n, s2)) t2 in
-        subsume g t1 t2 v
-      else false, v
-    | Rec (a1, _, t1', _), t2 -> subsume g (substitute a1 t1 t1') t2 v
-    | t1, Rec (a2, _, t2', _) -> subsume g t1 (substitute a2 t2 t2') v
+        if fst (subsume g t1 t2 v) then true, v else subsume_rec_left g t1 t2 v
+      else subsume_rec_left g t1 t2 v
+    | _ -> subsume_rec_left g t1 t2 v
+
+  and subsume_rec_left g t1 t2 v =
+    let open Substitution in
+    match t1, t2 with
+    | Rec (a1, _, t1', _), _ ->
+      if fst (subsume g (substitute a1 t1 t1') t2 v)
+      then true, v
+      else subsume_rec_right g t1 t2 v
+    | _ -> subsume_rec_right g t1 t2 v
+
+  and subsume_rec_right g t1 t2 v =
+    let open Substitution in
+    match t1, t2 with
+    | _, Rec (a2, _, t2', _) ->
+      if fst (subsume g t1 (substitute a2 t2 t2') v)
+      then true, v
+      else subsume_forall g t1 t2 v
     | _ -> subsume_forall g t1 t2 v
 
   and subsume_forall g t1 t2 v =
@@ -312,6 +326,13 @@ module Checker = struct
         && Gamma.(s <? s') (fun t1 t2 -> fst (subsume g t1 t2 v))
       , v )
     | _ -> false, v
+
+  let upper_type g t1 t2 v =
+    if fst (subsume g t1 t2 v)
+    then Some t2, v
+    else if fst (subsume g t2 t1 v)
+    then Some t1, v
+    else None, v
 
   module Operator = struct
     let ( <:?> ) t1 t2 g = check g t1 t2

@@ -14,6 +14,12 @@ module Checker : sig
     -> 'a Lambe_ast.Type.t
     -> bool Context.state
 
+  val upper_type :
+       'a Lambe_ast.Type.gamma
+    -> 'a Lambe_ast.Type.t
+    -> 'a Lambe_ast.Type.t
+    -> 'a Lambe_ast.Type.t Option.t Context.state
+
   module Operator : sig
     val ( <:?> ) :
          'a Lambe_ast.Type.t

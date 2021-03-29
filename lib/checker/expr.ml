@@ -179,16 +179,14 @@ module Checker = struct
           ~some:(fun _ -> synthetize_cases g (n, s) t l v')
           rc
       in
-      Option.fold ~none:(None, v)
-        ~some:(fun r -> Some r, v')
-        ( (fun tl tr ->
-            if fst (g |- (tl <? tr) v')
-            then tr
-            else if fst (g |- (tr <? tl) v')
-            then tl
-            else T.Union (tl, tr, s))
+      ( (fun tl tr ->
+          Option.fold
+            ~none:(T.Union (tl, tr, s))
+            ~some:Fun.id
+            (fst (Type.Checker.upper_type g tl tr v')))
         <$> rc
-        <*> rl )
+        <*> rl
+      , v' )
 
   module Operator = struct
     let ( <:?> ) t1 t2 s g = check g t1 t2 s
