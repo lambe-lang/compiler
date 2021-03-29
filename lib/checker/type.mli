@@ -24,9 +24,9 @@ module Checker : sig
     val ( <? ) :
          'a Lambe_ast.Type.t
       -> 'a Lambe_ast.Type.t
-      -> Context.Variables.t
+      -> Context.t
       -> 'a Lambe_ast.Type.gamma
-      -> bool * Context.Variables.t
+      -> bool * Context.t
 
     val ( |- ) :
       'a Lambe_ast.Type.gamma -> ('a Lambe_ast.Type.gamma -> 'b) -> 'b

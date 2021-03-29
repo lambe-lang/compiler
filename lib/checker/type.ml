@@ -159,7 +159,7 @@ module Checker = struct
     let open Lambe_ast.Type in
     let depth = ref 0 in
     let print_reduce = Lambe_render.Type.Render.reduce Format.std_formatter in
-    let rec reduce g t =
+    let rec reduce g t first =
       let _ = depth := !depth + 1 in
       let _ = print_int !depth in
       let _ = print_string " > " in
@@ -169,20 +169,20 @@ module Checker = struct
         | Variable (n, _) ->
           Some
             (Option.fold ~none:t ~some:Fun.id
-               (Finder.find_type n g >>= (fun t -> reduce g t)) )
+               (Finder.find_type n g >>= (fun t -> reduce g t first)) )
         | Apply (t1, t2, _) -> (
-          reduce g t1
+          reduce g t1 false
           >>= function
           | Lambda (n, k, t1', _) when check g t2 k ->
-            reduce g (substitute n t2 t1')
+            reduce g (substitute n t2 t1') first
           | _ -> None )
         | Use (t1, (Variable (_, _) as v), _) -> (
-          reduce g t1
+          reduce g t1 first
           >>= function
-          | Trait (g', _) -> reduce g' v >>= (fun t2 -> reduce g t2) | _ -> None
-          )
+          | Trait (g', _) -> reduce g' v first >>= (fun t2 -> reduce g t2 first)
+          | _ -> None )
         | Use (g, t, s) -> Some (Distribute.distribute g s t)
-        | Rec (n, _, t', _) -> Some (substitute n t t')
+        | Rec (n, _, t', _) when first = false -> Some (substitute n t t')
         | _ -> Some t
       in
       let _ = print_int !depth in
@@ -190,100 +190,128 @@ module Checker = struct
       let _ = print_reduce t result in
       result
     in
-    reduce g t
+    reduce g t true
 
-  let subsume g t1 t2 v =
+  let rec subsume g t1 t2 v =
+    let open Context in
+    let module K = Lambe_ast.Kind in
+    let print_subtype = Lambe_render.Type.Render.subtype Format.std_formatter in
+    let _ = print_subtype t1 t2 in
+    if Runtime.depth v > 20
+    then false, v
+    else if t1 = t2
+    then check g t1 (K.Type (TypeContext.get t1)), v
+    else subsume_reduce_left g t1 t2 (Runtime.incr v)
+
+  and subsume_reduce_left g t1 t2 v =
+    match reduce g t1 with
+    | None -> false, v
+    | Some t1' when t1' != t1 -> subsume g t1' t2 v
+    | _ -> subsume_reduce_right g t1 t2 v
+
+  and subsume_reduce_right g t1 t2 v =
+    match reduce g t2 with
+    | None -> false, v
+    | Some t2' when t2' != t2 -> subsume g t1 t2' v
+    | Some _ -> subsume_arrow g t1 t2 v
+
+  and subsume_arrow g t1 t2 v =
     let module K = Lambe_ast.Kind in
     let open Lambe_ast.Type in
+    match t1, t2 with
+    (* Arrow *)
+    | Arrow (t1, t2, _), Arrow (t3, t4, _) ->
+      let b1, v1 = subsume g t3 t1 v in
+      if b1
+      then
+        let b2, v2 = subsume g t2 t4 v1 in
+        b1 && b2, v2
+      else false, v
+    | _ -> subsume_invoke g t1 t2 v
+
+  and subsume_invoke g t1 t2 v =
+    match t1, t2 with
+    | Invoke (t1, t2, _), Invoke (t3, t4, _) ->
+      let b1, v1 = subsume g t3 t1 v in
+      if b1
+      then
+        let b2, v2 = subsume g t2 t4 v1 in
+        b1 && b2, v2
+      else false, v
+    | _ -> subsume_union g t1 t2 v
+
+  and subsume_union g t1 t2 v =
+    match t1, t2 with
+    | Union (t1, t2, _), t3 ->
+      let b1, v1 = subsume g t1 t3 v in
+      if b1 then subsume g t2 t3 v1 else false, v
+    | t1, Union (t2, t3, _) ->
+      let b1, v1 = subsume g t1 t2 v in
+      if b1 then b1, v1 else subsume g t1 t3 v1
+    | _ -> subsume_rec g t1 t2 v
+
+  and subsume_rec g t1 t2 v =
     let open Context in
     let open Substitution in
     let open Kind.Checker.Operator in
-    let open List in
-    let depth = ref 0 in
-    let print_subtype = Lambe_render.Type.Render.subtype Format.std_formatter in
-    let rec subsume g t1 t2 v =
-      let _ = depth := !depth + 1 in
-      let _ = print_int !depth in
-      let _ = print_string " -> " in
-      let _ = print_subtype t1 t2 in
-      match t1, t2 with
-      | _ when t1 = t2 -> check g t1 (K.Type (TypeContext.get t1)), v
-      (* Arrow *)
-      | Arrow (t1, t2, _), Arrow (t3, t4, _) ->
-        let b1, v1 = subsume g t3 t1 v in
-        if b1
-        then
-          let b2, v2 = subsume g t2 t4 v1 in
-          b1 && b2, v2
-        else false, v
-      (* Invoke *)
-      | Invoke (t1, t2, _), Invoke (t3, t4, _) ->
-        let b1, v1 = subsume g t3 t1 v in
-        if b1
-        then
-          let b2, v2 = subsume g t2 t4 v1 in
-          b1 && b2, v2
-        else false, v
-      (* Union *)
-      | Union (t1, t2, _), t3 ->
-        let b1, v1 = subsume g t1 t3 v in
-        if b1
-        then
-          let b2, v2 = subsume g t2 t3 v1 in
-          b1 && b2, v2
-        else false, v
-      | t1, Union (t2, t3, _) ->
-        let b1, v1 = subsume g t1 t2 v in
-        if b1
-        then b1, v1
-        else
-          let b2, v2 = subsume g t1 t3 v1 in
-          b2, v2
-      (* Rec *)
-      | Rec (a1, k1, t1, s1), Rec (a2, k2, t2, s2) ->
-        if k1 <? k2
-        then
-          let n, v = Variables.fresh v in
-          let t1 = substitute a1 (Variable (n, s1)) t1 in
-          let t2 = substitute a2 (Variable (n, s2)) t2 in
-          subsume g t1 t2 v
-        else false, v
-      | Rec (a1, _, t1', _), t2 -> subsume g (substitute a1 t1 t1') t2 v
-      | t1, Rec (a2, _, t2', _) -> subsume g t1 (substitute a2 t2 t2') v
-      (* Forall *)
-      | Forall (a1, k1, t1, s1), Forall (a2, k2, t2, s2) ->
-        if k2 <? k1
-        then
-          let n, v = Variables.fresh v in
-          let g = Gamma.(Helpers.k_set [ n, k2 ] + g) in
-          let t1 = substitute a1 (Variable (n, s1)) t1 in
-          let t2 = substitute a2 (Variable (n, s2)) t2 in
-          subsume g t1 t2 v
-        else false, v
-      (* Exists *)
-      | Exists (a1, k1, t1, s1), Exists (a2, k2, t2, s2) ->
+    match t1, t2 with
+    | Rec (a1, k1, t1, s1), Rec (a2, k2, t2, s2) ->
+      if k1 <? k2
+      then
         let n, v = Variables.fresh v in
-        let g = Gamma.(Helpers.k_set [ n, k1 ] + g) in
         let t1 = substitute a1 (Variable (n, s1)) t1 in
         let t2 = substitute a2 (Variable (n, s2)) t2 in
-        if k1 <? k2 then subsume g t1 t2 v else false, v
-      (* Constructor *)
-      | Const (n1, l1, _), Const (n2, l2, _) when n1 = n2 ->
-        Gamma.(l1 <? l2) (fun t1 t2 -> fst (subsume g t1 t2 v)), v
-      (* Trait *)
-      | Trait (Gamma (k, t, s, _), l), Trait (Gamma (k', t', s', _), l') ->
-        ( Trait (k, l) <? Trait (k', l')
-          && Gamma.(t <? t') (fun t1 t2 -> fst (subsume g t1 t2 v))
-          && Gamma.(s <? s') (fun t1 t2 -> fst (subsume g t1 t2 v))
-        , v )
-      | t1, t2 -> (
-        match reduce g t1, reduce g t2 with
-        | Some t1', Some t2' when t1' != t1 || t2' != t2 -> subsume g t1' t2' v
-        | Some t1', _ when t1' != t1 -> subsume g t1' t2 v
-        | _, Some t2' when t2' != t2 -> subsume g t1 t2' v
-        | _ -> false, v )
-    in
-    subsume g t1 t2 v
+        subsume g t1 t2 v
+      else false, v
+    | Rec (a1, _, t1', _), t2 -> subsume g (substitute a1 t1 t1') t2 v
+    | t1, Rec (a2, _, t2', _) -> subsume g t1 (substitute a2 t2 t2') v
+    | _ -> subsume_forall g t1 t2 v
+
+  and subsume_forall g t1 t2 v =
+    let open Context in
+    let open Substitution in
+    let open Kind.Checker.Operator in
+    match t1, t2 with
+    | Forall (a1, k1, t1, s1), Forall (a2, k2, t2, s2) ->
+      if k2 <? k1
+      then
+        let n, v = Variables.fresh v in
+        let g = Gamma.(Helpers.k_set [ n, k2 ] + g) in
+        let t1 = substitute a1 (Variable (n, s1)) t1 in
+        let t2 = substitute a2 (Variable (n, s2)) t2 in
+        subsume g t1 t2 v
+      else false, v
+    | _ -> subsume_exists g t1 t2 v
+
+  and subsume_exists g t1 t2 v =
+    let open Context in
+    let open Substitution in
+    let open Kind.Checker.Operator in
+    match t1, t2 with
+    | Exists (a1, k1, t1, s1), Exists (a2, k2, t2, s2) ->
+      let n, v = Variables.fresh v in
+      let g = Gamma.(Helpers.k_set [ n, k1 ] + g) in
+      let t1 = substitute a1 (Variable (n, s1)) t1 in
+      let t2 = substitute a2 (Variable (n, s2)) t2 in
+      if k1 <? k2 then subsume g t1 t2 v else false, v
+    | _ -> subsume_const g t1 t2 v
+
+  and subsume_const g t1 t2 v =
+    match t1, t2 with
+    | Const (n1, l1, _), Const (n2, l2, _) when n1 = n2 ->
+      Gamma.(l1 <? l2) (fun t1 t2 -> fst (subsume g t1 t2 v)), v
+    (* Trait *)
+    | _ -> subsume_trait g t1 t2 v
+
+  and subsume_trait g t1 t2 v =
+    let open Kind.Checker.Operator in
+    match t1, t2 with
+    | Trait (Gamma (k, t, s, _), l), Trait (Gamma (k', t', s', _), l') ->
+      ( Trait (k, l) <? Trait (k', l')
+        && Gamma.(t <? t') (fun t1 t2 -> fst (subsume g t1 t2 v))
+        && Gamma.(s <? s') (fun t1 t2 -> fst (subsume g t1 t2 v))
+      , v )
+    | _ -> false, v
 
   module Operator = struct
     let ( <:?> ) t1 t2 g = check g t1 t2

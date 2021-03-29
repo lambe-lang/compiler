@@ -1,9 +1,19 @@
-module Variables = struct
-  type t = int
+type t = int * int
 
-  let create = 0
+module Runtime = struct
+  let incr (v, d) = v, d + 1
 
-  let fresh i = "'a" ^ string_of_int i, i + 1
+  let depth t = snd t
 end
 
-type 'a state = Variables.t -> 'a * Variables.t
+module Variables = struct
+  let create = 0, 0
+
+  let fresh (v, d) = "'a" ^ string_of_int v, (v + 1, d)
+
+  let incr (v, d) = v, d + 1
+
+  let depth t = snd t
+end
+
+type 'a state = t -> 'a * t
