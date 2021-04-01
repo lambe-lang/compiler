@@ -85,9 +85,9 @@ module Checker = struct
   and check_after_synthetize g e t v =
     let open Type.Checker.Operator in
     let module T = Lambe_ast.Type in
-    let r, v = synthetize g e v in
+    let r, v' = synthetize g e v in
     Option.fold ~none:(false, v) ~some:Fun.id
-      ((fun t' -> g |- (t' <? t) v) <$> r)
+      ((fun t' -> g |- (t' <? t) v') <$> r)
 
   and synthetize g e v =
     let print_check = Lambe_render.Expr.Render.check Format.std_formatter in
@@ -124,13 +124,13 @@ module Checker = struct
     let module T = Lambe_ast.Type in
     match e with
     | Apply (e1, e2, _) ->
-      let t, v = synthetize g e2 v in
+      let t, v' = synthetize g e2 v in
       Option.fold ~none:(None, v) ~some:Fun.id
         ( (function
             | T.Invoke (t1, t2, _) ->
               let r, v = check g e1 t1 v in
-              if r then Some t2, v else None, v
-            | _ -> synthetize_apply g e v)
+              if r then Some t2, v' else None, v
+            | _ -> synthetize_apply g e v')
         <$> t )
     | _ -> synthetize_bind g e v
 
@@ -182,7 +182,7 @@ module Checker = struct
       else None, v
     | c :: l ->
       let rc, v' = synthetize_cases g (n, s) t [ c ] v in
-      let rl, v' =
+      let rl, v'' =
         Option.fold ~none:(None, v)
           ~some:(fun _ -> synthetize_cases g (n, s) t l v')
           rc
@@ -191,7 +191,7 @@ module Checker = struct
           Option.fold
             ~none:(T.Union (tl, tr, s))
             ~some:Fun.id
-            (fst (Type.Checker.upper_type g tl tr v')))
+            (fst (Type.Checker.upper_type g tl tr v'')))
         <$> rc
         <*> rl
       , v' )
