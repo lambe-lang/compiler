@@ -40,7 +40,13 @@ module Substitution = struct
 end
 
 module Checker = struct
-  let rec check g e t v =
+  let ( |- ) g f = f g
+
+  let rec ( <:> ) e t s g = check g e t s
+
+  and ( <:?> ) e s g = synthetize g e s
+
+  and check g e t v =
     let module T = Lambe_ast.Type in
     let print_check = Lambe_render.Expr.Render.check Format.std_formatter in
     let _ = print_string " Checking > " in
@@ -49,6 +55,8 @@ module Checker = struct
     let _ = print_string " Checking < " in
     let _ = print_check e (Some t) in
     result
+
+  (** Private check functions **)
 
   and check_generic g e t v =
     let module T = Lambe_ast.Type in
@@ -67,7 +75,7 @@ module Checker = struct
       let e = Substitution.substitute a (Variable (n, s)) e in
       match Type.Checker.reduce g t with
       | Some T.(Arrow (t1, t2, _)) ->
-        check Gamma.(Helpers.s_set [ n, t1 ] + g) e t2 v
+        Gamma.(Helpers.s_set [ n, t1 ] + g) |- (e <:> t2) v
       | _ -> false, v )
     | _ -> check_method g e t v
 
@@ -78,16 +86,16 @@ module Checker = struct
     | Method (e, _) -> (
       match Type.Checker.reduce g t with
       | Some T.(Invoke (t1, t2, _)) ->
-        check Gamma.(Helpers.s_set [ "self", t1 ] + g) e t2 v
+        Gamma.(Helpers.s_set [ "self", t1 ] + g) |- (e <:> t2) v
       | _ -> false, v )
     | _ -> check_after_synthetize g e t v
 
   and check_after_synthetize g e t v =
-    let open Type.Checker.Operator in
+    let module O = Type.Checker.Operator in
     let module T = Lambe_ast.Type in
     let r, v' = synthetize g e v in
     Option.fold ~none:(false, v) ~some:Fun.id
-      ((fun t' -> g |- (t' <? t) v') <$> r)
+      O.((fun t' -> g |- (t' <? t) v') <$> r)
 
   and synthetize g e v =
     let print_check = Lambe_render.Expr.Render.check Format.std_formatter in
@@ -112,10 +120,10 @@ module Checker = struct
     let module T = Lambe_ast.Type in
     match e with
     | Use (e1, e2, _) -> (
-      match synthetize g e1 v with
-      | Some T.(Trait (g', _)), v -> synthetize Gamma.(g' + g) e2 v
+      match g |- (e1 <:?> v) with
+      | Some T.(Trait (g', _)), v -> Gamma.(g' + g) |- (e2 <:?> v)
       | Some T.(Const (_, l, _)), v ->
-        synthetize Gamma.(Helpers.(s_set l) + g) e2 v
+        Gamma.(Helpers.(s_set l) + g) |- (e2 <:?> v)
       | _ -> None, v )
     | _ -> synthetize_invoke g e v
 
@@ -124,11 +132,11 @@ module Checker = struct
     let module T = Lambe_ast.Type in
     match e with
     | Apply (e1, e2, _) ->
-      let t, v' = synthetize g e2 v in
+      let t, v' = g |- (e2 <:?> v) in
       Option.fold ~none:(None, v) ~some:Fun.id
         ( (function
             | T.Invoke (t1, t2, _) ->
-              let r, v = check g e1 t1 v in
+              let r, v = g |- (e1 <:> t1) v in
               if r then Some t2, v' else None, v
             | _ -> synthetize_apply g e v')
         <$> t )
@@ -139,11 +147,11 @@ module Checker = struct
     let module T = Lambe_ast.Type in
     match e with
     | Apply (e1, e2, _) ->
-      let t, v' = synthetize g e1 v in
+      let t, v' = g |- (e1 <:?> v) in
       Option.fold ~none:(None, v) ~some:Fun.id
         ( (function
             | T.Arrow (t1, t2, _) ->
-              let r, v' = check g e2 t1 v' in
+              let r, v' = g |- (e2 <:> t1) v' in
               if r then Some t2, v' else None, v'
             | _ -> None, v)
         <$> t )
@@ -154,9 +162,9 @@ module Checker = struct
     let module T = Lambe_ast.Type in
     match e with
     | Bind (n, e1, e2, _) ->
-      let r, v' = synthetize g e1 v in
+      let r, v' = g |- (e1 <:?> v) in
       Option.fold ~none:(None, v)
-        ~some:(fun t1 -> synthetize Gamma.(Helpers.s_set [ n, t1 ] + g) e2 v')
+        ~some:(fun t1 -> Gamma.(Helpers.s_set [ n, t1 ] + g) |- (e2 <:?> v'))
         r
     | _ -> synthetize_when g e v
 
@@ -165,20 +173,20 @@ module Checker = struct
     let module T = Lambe_ast.Type in
     match e with
     | When (n, l, s) ->
-      let tn, v' = synthetize g (Variable (n, s)) v in
+      let tn, v' = g |- (Variable (n, s) <:?> v) in
       Option.fold ~none:(None, v)
         ~some:(fun t -> synthetize_cases g (n, s) t l v')
         tn
     | _ -> None, v
 
   and synthetize_cases g (n, s) t l v =
-    let open Type.Checker.Operator in
+    let module O = Type.Checker.Operator in
     let module T = Lambe_ast.Type in
     match l with
     | [] -> None, v
     | [ (tc, e) ] ->
-      if fst (g |- (tc <? t) v)
-      then synthetize Gamma.(Helpers.s_set [ n, tc ] + g) e v
+      if fst O.(g |- (tc <? t) v)
+      then Gamma.(Helpers.s_set [ n, tc ] + g) |- (e <:?> v)
       else None, v
     | c :: l ->
       let rc, v' = synthetize_cases g (n, s) t [ c ] v in
