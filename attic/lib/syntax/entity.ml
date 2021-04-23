@@ -28,6 +28,8 @@ struct
     ; "for"
     ; "with"
     ; "forall"
+    ; "exists"
+    ; "rec"
     ; "("
     ; ")"
     ; "{"

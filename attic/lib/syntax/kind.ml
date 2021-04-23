@@ -13,7 +13,7 @@ struct
 
   let keywords = [ "type"; "->"; "("; ")" ]
 
-  let type_kind = kwd "type" <$> constant Type
+  let type_kind = kwd "*" <$> constant Type
 
   let rec block_kind () = kwd "(" &> do_lazy complex_kind <& kwd ")"
 

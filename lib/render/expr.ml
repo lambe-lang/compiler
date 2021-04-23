@@ -12,10 +12,13 @@ module Render = struct
     | Use (e1, e2, _) -> Format.fprintf ppf "(%a).(%a)" pp e1 pp e2
     | Trait (g, d, _) -> pp_gamma ppf (g, d)
     | When (n, l, _) -> Format.fprintf ppf "when %s %a" n pp_when l
-    | Pack (t, e, _) -> Format.fprintf ppf "{ %a, %a }" Type.Render.pp t pp e
+    | Pack (t, e, (a, k, t'), s) ->
+      Format.fprintf ppf "{ %a, %a } as %a" Type.Render.pp t pp e Type.Render.pp
+        (Lambe_ast.Type.Exists (a, k, t', s))
     | Unpack (t, n, e1, e2, _) ->
       Format.fprintf ppf "let { %a, %s } = %a in %a" Type.Render.pp t n pp e1 pp
         e2
+    | HasType (e, t, _) -> Format.fprintf ppf "%a as %a" pp e Type.Render.pp t
 
   and pp_when ppf = function
     | [] -> ()

@@ -33,8 +33,9 @@ module Substitution = struct
       | Use (e1, e2, s) -> Use (subs e1, subs e2, s)
       | Trait (g, l, s) -> Trait (g, (fun (n, e) -> n, subs e) <$> l, s)
       | When (n, l, s) -> When (n, (fun (t, e) -> t, subs e) <$> l, s)
-      | Pack (t, e, s) -> Pack (t, subs e, s)
+      | Pack (t, e, t', s) -> Pack (t, subs e, t', s)
       | Unpack (t, n, e1, e2, s) -> Unpack (t, n, subs e1, subs e2, s)
+      | HasType (e, t, s) -> HasType (subs e, t, s)
     in
     subs t
 end
@@ -59,8 +60,8 @@ module Checker = struct
   (** Private check functions **)
 
   and check_generic g e t v =
-    let module T = Lambe_ast.Type in
     let open List in
+    let module T = Lambe_ast.Type in
     match t with
     | T.Forall (n, k, t, _) -> check Gamma.(Helpers.k_set [ n, k ] + g) e t v
     | _ -> check_lambda g e t v
@@ -101,16 +102,23 @@ module Checker = struct
     let print_check = Lambe_render.Expr.Render.check Format.std_formatter in
     let _ = print_string " > " in
     let _ = print_check e None in
-    let result = synthetize_variable g e v in
+    let result = synthetize_as_type g e v in
     let _ = print_string " < " in
     let _ = print_check e (fst result) in
     result
 
   (** Private synthetize functions **)
 
+  and synthetize_as_type g e v =
+    let open Lambe_ast.Expr in
+    match e with
+    | HasType (e, t, _) ->
+      let r, v' = g |- (e <:> t) v in
+      if r then Some t, v' else None, v
+    | _ -> synthetize_variable g e v
+
   and synthetize_variable g e v =
     let open Lambe_ast.Expr in
-    let module T = Lambe_ast.Type in
     match e with
     | Variable (n, _) -> Finder.find_signature n g, v
     | _ -> synthetize_use g e v

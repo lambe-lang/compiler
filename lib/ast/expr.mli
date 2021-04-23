@@ -11,6 +11,7 @@
 | ε.ε
 | {τ,ε}
 | let {τ,α} = ε in ε
+| ε as τ
 
 Σ=Γ*M
 
@@ -25,5 +26,6 @@ type 'a t =
   | Use of 'a t * 'a t * 'a
   | Trait of 'a Type.gamma * 'a t Common.dictionary * 'a
   | When of Common.var * ('a Type.t * 'a t) list * 'a
-  | Pack of 'a Type.t * 'a t * 'a
+  | Pack of 'a Type.t * 'a t * (Common.var * 'a Kind.t * 'a Type.t) * 'a
   | Unpack of 'a Type.t * Common.var * 'a t * 'a t * 'a
+  | HasType of 'a t * 'a Type.t * 'a
