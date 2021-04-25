@@ -258,6 +258,37 @@ let test_case_024 () =
   Alcotest.(check bool)
     "should accept lambda(v).v : forall (a:*).(a -> a)" expected computed
 
+let test_case_025 () =
+  let expected = true
+  and computed, _ =
+    empty
+    |- ( lambda "i" (v "i")
+       <:> T.(forall ("b", K.star) (v "b" |-> v "b"))
+       <:?> T.(forall ("a", K.star) (v "a" |-> v "a")) )
+         Variables.create
+  in
+  Alcotest.(check bool)
+    "should accept lambda(v).v as forall (b:*).(b -> b) : forall (a:*).(a -> a)"
+    expected computed
+
+let test_case_026 () =
+  let expected = true
+  and computed, _ =
+    H.k_set [ "int", K.star; "string", K.star ] + H.s_set [ "a", T.v "int" ]
+    |- (v "a" <:> T.v "int" <:?> T.(v "int" <|> v "string")) Variables.create
+  in
+  Alcotest.(check bool)
+    "should accept a as int :? int | string" expected computed
+
+let test_case_027 () =
+  let expected = false
+  and computed, _ =
+    H.k_set [ "int", K.star; "string", K.star ] + H.s_set [ "a", T.v "int" ]
+    |- (v "a" <:> T.(v "int" <|> v "string") <:?> T.v "int") Variables.create
+  in
+  Alcotest.(check bool)
+    "should reject a as int | string :? int" expected computed
+
 let test_cases =
   let open Alcotest in
   ( "Expression check"
@@ -305,4 +336,9 @@ let test_cases =
         `Quick test_case_023
     ; test_case "Accept lambda(v).v : forall (a:*).(a -> a)" `Quick
         test_case_024
+    ; test_case
+        "Accept lambda(v).v as forall (b:*).(b -> b) : forall (a:*).(a -> a)"
+        `Quick test_case_025
+    ; test_case "Accept a as int :? int | string" `Quick test_case_026
+    ; test_case "Reject a as int | string :? int" `Quick test_case_027
     ] )

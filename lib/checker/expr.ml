@@ -52,12 +52,20 @@ module Checker = struct
     let print_check = Lambe_render.Expr.Render.check Format.std_formatter in
     let _ = print_string " Checking > " in
     let _ = print_check e (Some t) in
-    let result = check_generic g e t v in
+    let result = check_has_type g e t v in
     let _ = print_string " Checking < " in
     let _ = print_check e (Some t) in
     result
 
   (** Private check functions **)
+
+  and check_has_type g e t v =
+    let module O = Type.Checker.Operator in
+    match e with
+    | HasType (e, t', _) ->
+      let r, v' = g |- (e <:> t') v in
+      if r then O.(g |- (t' <? t) v') else false, v
+    | _ -> check_generic g e t v
 
   and check_generic g e t v =
     let open List in
