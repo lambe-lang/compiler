@@ -59,5 +59,5 @@ module Exprs = struct
 
   let unpack t n e e' = Expr.Unpack (t, n, e, e', ())
 
-  let ( <:> ) e t = Expr.HasType (e, t, ())
+  let ( <:> ) e t = Expr.As (e, t, ())
 end

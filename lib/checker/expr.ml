@@ -35,7 +35,7 @@ module Substitution = struct
       | When (n, l, s) -> When (n, (fun (t, e) -> t, subs e) <$> l, s)
       | Pack (t, e, t', s) -> Pack (t, subs e, t', s)
       | Unpack (t, n, e1, e2, s) -> Unpack (t, n, subs e1, subs e2, s)
-      | HasType (e, t, s) -> HasType (subs e, t, s)
+      | As (e, t, s) -> As (subs e, t, s)
     in
     subs t
 end
@@ -62,7 +62,7 @@ module Checker = struct
   and check_has_type g e t v =
     let module O = Type.Checker.Operator in
     match e with
-    | HasType (e, t', _) ->
+    | As (e, t', _) ->
       let r, v' = g |- (e <:> t') v in
       if r then O.(g |- (t' <? t) v') else false, v
     | _ -> check_generic g e t v
@@ -120,7 +120,7 @@ module Checker = struct
   and synthetize_as_type g e v =
     let open Lambe_ast.Expr in
     match e with
-    | HasType (e, t, _) ->
+    | As (e, t, _) ->
       let r, v' = g |- (e <:> t) v in
       if r then Some t, v' else None, v
     | _ -> synthetize_variable g e v

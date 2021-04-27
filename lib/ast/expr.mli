@@ -28,4 +28,4 @@ type 'a t =
   | When of Common.var * ('a Type.t * 'a t) list * 'a
   | Pack of 'a Type.t * 'a t * (Common.var * 'a Kind.t * 'a Type.t) * 'a
   | Unpack of 'a Type.t * Common.var * 'a t * 'a t * 'a
-  | HasType of 'a t * 'a Type.t * 'a
+  | As of 'a t * 'a Type.t * 'a

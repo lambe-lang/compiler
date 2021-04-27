@@ -18,7 +18,7 @@ module Render = struct
     | Unpack (t, n, e1, e2, _) ->
       Format.fprintf ppf "let { %a, %s } = %a in %a" Type.Render.pp t n pp e1 pp
         e2
-    | HasType (e, t, _) -> Format.fprintf ppf "%a as %a" pp e Type.Render.pp t
+    | As (e, t, _) -> Format.fprintf ppf "%a as %a" pp e Type.Render.pp t
 
   and pp_when ppf = function
     | [] -> ()
