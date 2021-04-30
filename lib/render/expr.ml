@@ -16,7 +16,7 @@ module Render = struct
       Format.fprintf ppf "{ %a, %a } as %a" Type.Render.pp t pp e Type.Render.pp
         (Lambe_ast.Type.Exists (a, k, t', s))
     | Unpack (t, n, e1, e2, _) ->
-      Format.fprintf ppf "let { %a, %s } = %a in %a" Type.Render.pp t n pp e1 pp
+      Format.fprintf ppf "let { %s, %s } = %a in %a" t n pp e1 pp
         e2
     | As (e, t, _) -> Format.fprintf ppf "%a as %a" pp e Type.Render.pp t
 

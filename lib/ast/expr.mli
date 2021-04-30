@@ -9,9 +9,10 @@
 | when(α).{τi -> εi}I
 | Σ
 | ε.ε
-| {τ,ε}
-| let {τ,α} = ε in ε
+| unpack {α,α} = ε in ε
+| pack {τ,ε}
 | ε as τ
+
 
 Σ=Γ*M
 
@@ -27,5 +28,5 @@ type 'a t =
   | Trait of 'a Type.gamma * 'a t Common.dictionary * 'a
   | When of Common.var * ('a Type.t * 'a t) list * 'a
   | Pack of 'a Type.t * 'a t * (Common.var * 'a Kind.t * 'a Type.t) * 'a
-  | Unpack of 'a Type.t * Common.var * 'a t * 'a t * 'a
+  | Unpack of Common.var * Common.var * 'a t * 'a t * 'a
   | As of 'a t * 'a Type.t * 'a

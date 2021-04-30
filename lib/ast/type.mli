@@ -15,7 +15,7 @@ Type and environment definition
   | μ(α).τ
   | c S
   | Γ
-  | τ.m
+  | τ.τ
 
 K = {mi:κi}I
 T = {mi􏰁=τi}I
