@@ -33,7 +33,7 @@ module Substitution = struct
       | Use (e1, e2, s) -> Use (subs e1, subs e2, s)
       | Trait (g, l, s) -> Trait (g, (fun (n, e) -> n, subs e) <$> l, s)
       | When (n, l, s) -> When (n, (fun (t, e) -> t, subs e) <$> l, s)
-      | Pack (t, e, t', s) -> Pack (t, subs e, t', s)
+      | Pack (t, e, s) -> Pack (t, subs e, s)
       | Unpack (t, n, e1, e2, s) -> Unpack (t, n, subs e1, subs e2, s)
       | As (e, t, s) -> As (subs e, t, s)
     in

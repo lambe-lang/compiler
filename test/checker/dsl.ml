@@ -55,7 +55,7 @@ module Exprs = struct
 
   let ( @ ) e e' = Expr.Use (e, e', ())
 
-  let pack t e t' = Expr.Pack (t, e, t', ())
+  let pack t e = Expr.Pack (t, e, ())
 
   let unpack t n e e' = Expr.Unpack (t, n, e, e', ())
 
